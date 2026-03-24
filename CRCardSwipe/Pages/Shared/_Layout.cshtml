@@ -1,0 +1,130 @@
+@inject IWebHostEnvironment Environment
+@inject CRCardSwipe.Models.TemplateSettings Settings
+@{
+    var changelogPath = System.IO.Path.Combine(Environment.WebRootPath, "changelog.html");
+    var changelogContent = System.IO.File.ReadAllText(changelogPath);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @Settings.AppName</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans:wght@400;600;700&family=Barlow:wght@400;500&family=Barlow+Semi+Condensed:wght@400;600&family=Barlow+Condensed:wght@400;600&family=Bitter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CRCardSwipe.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark mb-3" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/Index">
+                    <i class="fas fa-id-card"></i> @Settings.AppName
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Index">
+                                <i class="fas fa-home"></i> DASHBOARD
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Administrator") || User.IsInRole("Operator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/CardSwipe/Index">
+                                    <i class="fas fa-id-card"></i> CARD SWIPE
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-clock"></i> STAFF
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="staffDropdown">
+                                    <li><a class="dropdown-item" asp-page="/Staff/CheckIn"><i class="fas fa-sign-in-alt"></i> Check-In</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Staff/CheckOut"><i class="fas fa-sign-out-alt"></i> Check-Out</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-page="/Staff/ViewTimesheet"><i class="fas fa-calendar-alt"></i> My Timesheet</a></li>
+                                </ul>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/CardSwipe/ViewVisits">
+                                <i class="fas fa-history"></i> VISITS
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cog"></i> ADMIN
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-page="/Admin/ManageStaff"><i class="fas fa-users-cog"></i> Manage Staff</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Admin/ViewTimesheets"><i class="fas fa-calendar-alt"></i> All Timesheets</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-5" id="main-content" tabindex="-1">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 - @Settings.AppFullName.ToUpper() |
+                <a href="#" data-bs-toggle="modal" data-bs-target="#aboutModal" class="footer-link">About</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">About @Settings.AppFullName</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <section class="mb-4">
+                        <h6 class="fw-bold">Support Contact</h6>
+                        <p class="mb-1">
+                            <strong>@Settings.SupportContact</strong><br />
+                            <a href="mailto:@Settings.SupportEmail">@Settings.SupportEmail</a>
+                        </p>
+                    </section>
+
+                    <section>
+                        <h6 class="fw-bold">Release Notes</h6>
+                        @Html.Raw(changelogContent)
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

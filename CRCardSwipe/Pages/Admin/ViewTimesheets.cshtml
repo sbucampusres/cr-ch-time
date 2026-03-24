@@ -1,0 +1,199 @@
+@page
+@model CRCardSwipe.Pages.Admin.ViewTimesheetsModel
+@{
+    ViewData["Title"] = "All Timesheets";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-calendar-alt icon-primary"></i> ALL TIMESHEETS</h1>
+        <p class="text-muted">Application: <strong>@Model.CurrentApplication</strong></p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label asp-for="StartDate" class="form-label">Start Date</label>
+                    <input asp-for="StartDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="EndDate" class="form-label">End Date</label>
+                    <input asp-for="EndDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FilterNetId" class="form-label">NetID</label>
+                    <input asp-for="FilterNetId" class="form-control" placeholder="Filter by NetID" autocomplete="off" />
+                </div>
+                @if (Model.Departments.Any())
+                {
+                    <div class="col-md-3">
+                        <label asp-for="FilterDeptId" class="form-label">Department</label>
+                        <select asp-for="FilterDeptId" class="form-select"
+                                asp-items="@(new SelectList(Model.Departments, "DeptId", "Name"))">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                }
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Entries.Any())
+{
+    <div class="row mb-3 g-2">
+        <div class="col-auto">
+            <div class="card text-bg-primary">
+                <div class="card-body py-2 px-3">
+                    <div class="small">Total Hours</div>
+                    <div class="fw-bold fs-5">@Math.Floor(Model.GrandTotalHours)h @((int)((Model.GrandTotalHours % 1) * 60))m</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="card text-bg-secondary">
+                <div class="card-body py-2 px-3">
+                    <div class="small">Entries</div>
+                    <div class="fw-bold fs-5">@Model.Entries.Count</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="card text-bg-info">
+                <div class="card-body py-2 px-3">
+                    <div class="small">Staff</div>
+                    <div class="fw-bold fs-5">@Model.Summary.Count</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto ms-auto d-flex align-items-end gap-2">
+            <a asp-page-handler="Export"
+               asp-route-startDate="@Model.StartDate.ToString("yyyy-MM-dd")"
+               asp-route-endDate="@Model.EndDate.ToString("yyyy-MM-dd")"
+               asp-route-filterNetId="@Model.FilterNetId"
+               asp-route-filterDeptId="@Model.FilterDeptId"
+               class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Summary.Count > 1)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Summary by Staff Member</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <caption class="visually-hidden">Hours summary per staff member</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">NetID</th>
+                                <th scope="col">Entries</th>
+                                <th scope="col">Total Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Summary)
+                            {
+                                <tr>
+                                    <td><code>@s.NetId</code></td>
+                                    <td>@s.EntryCount</td>
+                                    <td>@Math.Floor(s.TotalHours)h @((int)((s.TotalHours % 1) * 60))m</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-group-divider">
+                            <tr class="fw-bold">
+                                <td>Total</td>
+                                <td>@Model.Entries.Count</td>
+                                <td>@Math.Floor(Model.GrandTotalHours)h @((int)((Model.GrandTotalHours % 1) * 60))m</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Time Entries</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <caption class="visually-hidden">All timesheet entries for @Model.CurrentApplication</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">NetID</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Check-In</th>
+                            <th scope="col">In Computer</th>
+                            <th scope="col">Check-Out</th>
+                            <th scope="col">Out Computer</th>
+                            <th scope="col">Duration</th>
+                            @if (Model.Departments.Any())
+                            {
+                                <th scope="col">Department</th>
+                            }
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.Entries)
+                        {
+                            var deptName = entry.DepartmentId.HasValue && Model.DeptNames.TryGetValue(entry.DepartmentId.Value, out var dn) ? dn : null;
+                            <tr class="@(entry.IsCheckedIn ? "table-info" : "")">
+                                <td><code>@entry.NetId</code></td>
+                                <td>@entry.CheckinTimestamp.ToString("MM/dd/yyyy")</td>
+                                <td>@entry.CheckinTimestamp.ToString("h:mm tt")</td>
+                                <td><small class="text-muted">@(entry.CheckinHostname ?? "—")</small></td>
+                                <td>@(entry.CheckoutTimestamp?.ToString("h:mm tt") ?? "—")</td>
+                                <td><small class="text-muted">@(entry.CheckoutHostname ?? "—")</small></td>
+                                <td>@entry.DurationDisplay</td>
+                                @if (Model.Departments.Any())
+                                {
+                                    <td>@(deptName ?? "—")</td>
+                                }
+                                <td>
+                                    @if (entry.IsCheckedIn)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else if (entry.HoursWorked > 12)
+                                    {
+                                        <span class="badge bg-warning text-dark">Long Shift</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Complete</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No timesheet entries found for the selected filters.
+    </div>
+}

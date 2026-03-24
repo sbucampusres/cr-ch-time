@@ -1,0 +1,24 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<ul class="navbar-nav">
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <li class="nav-item">
+        <span class="nav-link">
+            <i class="fas fa-user"></i> @User.Identity.Name
+            @if (User.IsInRole("Administrator"))
+            {
+                <span class="badge bg-danger ms-1">Admin</span>
+            }
+            else if (User.IsInRole("Operator"))
+            {
+                <span class="badge bg-warning ms-1">Operator</span>
+            }
+            else if (User.IsInRole("Viewer"))
+            {
+                <span class="badge bg-info ms-1">Viewer</span>
+            }
+        </span>
+    </li>
+}
+</ul>

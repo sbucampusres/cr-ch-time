@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRCardSwipe", "CRCardSwipe.csproj", "{77E7668B-AC3D-C59F-5F33-EB2CD5BC879A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77E7668B-AC3D-C59F-5F33-EB2CD5BC879A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E7668B-AC3D-C59F-5F33-EB2CD5BC879A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E7668B-AC3D-C59F-5F33-EB2CD5BC879A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E7668B-AC3D-C59F-5F33-EB2CD5BC879A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CDB1AE95-D822-4E95-83CE-A29B2F4AA73E}
+	EndGlobalSection
+EndGlobal

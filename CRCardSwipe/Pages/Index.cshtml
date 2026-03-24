@@ -1,0 +1,220 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-tachometer-alt icon-primary"></i> CARDSWIPE DASHBOARD</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt icon-light"></i> QUICK ACTIONS</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-page="/CardSwipe/Index" class="btn btn-primary btn-lg">
+                        <i class="fas fa-id-card"></i> Card Swipe
+                    </a>
+                    <a asp-page="/Staff/CheckIn" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt"></i> Staff Check-In
+                    </a>
+                    <a asp-page="/Staff/CheckOut" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-out-alt"></i> Staff Check-Out
+                    </a>
+                    <a asp-page="/CardSwipe/ViewVisits" class="btn btn-outline-secondary">
+                        <i class="fas fa-history"></i> View Visits
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> SYSTEM INFO</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">
+                    <strong>Current Time:</strong> @DateTime.Now.ToString("dddd, MMMM d, yyyy h:mm tt")
+                </p>
+                <p class="text-muted mb-2">
+                    <strong>Logged in as:</strong> @User.Identity?.Name
+                </p>
+                <p class="text-muted mb-0">
+                    <strong>Access Level:</strong> @User.Claims.FirstOrDefault(c => c.Type == "AccessLevel")?.Value
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0"><i class="fas fa-bar-chart icon-primary"></i> Visits by Fitness Center</h5>
+                <div class="d-flex gap-2">
+                    <label for="barChartMonthSel" class="visually-hidden">Month</label>
+                    <select id="barChartMonthSel" class="form-select form-select-sm" style="width:auto">
+                        @{ var months = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames;
+                           var prevMonth = DateTime.Today.AddMonths(-1); }
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            if (m == prevMonth.Month)
+                            {
+                                <option value="@m" selected>@months[m - 1]</option>
+                            }
+                            else
+                            {
+                                <option value="@m">@months[m - 1]</option>
+                            }
+                        }
+                    </select>
+                    <label for="barChartYearSel" class="visually-hidden">Year</label>
+                    <select id="barChartYearSel" class="form-select form-select-sm" style="width:auto">
+                        @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 4; y--)
+                        {
+                            if (y == prevMonth.Year)
+                            {
+                                <option value="@y" selected>@y</option>
+                            }
+                            else
+                            {
+                                <option value="@y">@y</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="visitsByHostChart" aria-label="Bar chart of visits per fitness center" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-area icon-primary"></i> Daily Visit Trend (Last 90 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyVisitsChart" aria-label="Area chart of daily visits over last 90 days" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        // ── data from server ────────────────────────────────────────────────
+        const initialByHost  = @Html.Raw(Model.VisitsByHostJson);
+        const dailyData      = @Html.Raw(Model.DailyVisitsJson);
+
+        // ── colour palette ──────────────────────────────────────────────────
+        const barColors = [
+            '#0d6efd','#198754','#dc3545','#fd7e14',
+            '#6f42c1','#20c997','#0dcaf0','#ffc107'
+        ];
+
+        // ── bar chart ───────────────────────────────────────────────────────
+        function buildBarData(rows) {
+            return {
+                labels:   rows.map(r => r.hostname),
+                datasets: [{
+                    label: 'Visits',
+                    data:  rows.map(r => r.visitCount),
+                    backgroundColor: rows.map((_, i) => barColors[i % barColors.length]),
+                    borderRadius: 4
+                }]
+            };
+        }
+
+        const barCtx = document.getElementById('visitsByHostChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: buildBarData(initialByHost),
+            plugins: [ChartDataLabels],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#333',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: v => v
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { ticks: { maxRotation: 30 } }
+                },
+                layout: { padding: { top: 20 } }
+            }
+        });
+
+        // month/year selects → fetch updated bar data
+        async function refreshBarChart() {
+            const year  = parseInt(document.getElementById('barChartYearSel').value);
+            const month = parseInt(document.getElementById('barChartMonthSel').value);
+            const resp = await fetch(`?handler=VisitsByHost&year=${year}&month=${month}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!resp.ok) return;
+            const rows = await resp.json();
+            barChart.data = buildBarData(rows);
+            barChart.update();
+        }
+        document.getElementById('barChartMonthSel').addEventListener('change', refreshBarChart);
+        document.getElementById('barChartYearSel').addEventListener('change', refreshBarChart);
+
+        // ── daily trend area chart ──────────────────────────────────────────
+        const areaCtx = document.getElementById('dailyVisitsChart').getContext('2d');
+        const areaChart = new Chart(areaCtx, {
+            type: 'line',
+            data: {
+                labels: dailyData.map(r => {
+                    const d = new Date(r.visitDate);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Daily Visits',
+                    data: dailyData.map(r => r.visitCount),
+                    fill: true,
+                    backgroundColor: 'rgba(13, 110, 253, 0.15)',
+                    borderColor: '#0d6efd',
+                    borderWidth: 2,
+                    pointRadius: dailyData.length > 60 ? 0 : 3,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { ticks: { maxTicksLimit: 12 } }
+                }
+            }
+        });
+
+        // ── handle window resize ────────────────────────────────────────────
+        window.addEventListener('resize', () => {
+            barChart.resize();
+            areaChart.resize();
+        });
+    </script>
+}

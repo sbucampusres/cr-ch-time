@@ -1,0 +1,490 @@
+/* SBU Color Palette */
+:root {
+  /* Primary colors */
+  --sbu-red: #990000;
+  --sbu-black: #000000;
+
+  /* Secondary colors */
+  --sbu-dark-red: #6B000D;
+  --sbu-bright-red: #D52027;
+  --sbu-dark-gray: #4B4B4B;
+  --sbu-medium-gray: #828282;
+  --sbu-light-gray: #BEBEBE;
+  --sbu-navy-blue: #002244;
+  --sbu-royal-blue: #00549A;
+  --sbu-turquoise: #1791AD;
+  --sbu-forest-green: #104247;
+  --sbu-pear: #F1EA86;
+  --sbu-celery: #BCCF9D;
+  --sbu-cream: #F8F2C5;
+
+  /* Font families */
+  --font-alumni-sans: 'Alumni Sans', sans-serif;
+  --font-bitter: 'Bitter', serif;
+  --font-barlow-semi: 'Barlow Semi Condensed', sans-serif;
+  --font-barlow-condensed: 'Barlow Condensed', sans-serif;
+  --font-barlow: 'Barlow', sans-serif;
+}
+
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin-bottom: 60px;
+  font-family: var(--font-barlow);
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--sbu-red);
+}
+
+h4, h5, h6 {
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--sbu-dark-gray);
+}
+
+/* Navigation */
+.navbar {
+  background-color: var(--sbu-red) !important;
+}
+
+.navbar-brand {
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  color: white !important;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+  color: white !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--sbu-cream) !important;
+}
+
+.navbar-toggler {
+  border-color: white;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='white' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--sbu-red);
+  border-color: var(--sbu-red);
+  color: white;
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--sbu-dark-red);
+  border-color: var(--sbu-dark-red);
+  color: white;
+}
+
+.btn-outline-primary {
+  border-color: var(--sbu-red);
+  color: var(--sbu-red);
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+  background-color: var(--sbu-red);
+  border-color: var(--sbu-red);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--sbu-dark-gray);
+  border-color: var(--sbu-dark-gray);
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+.btn-danger {
+  background-color: var(--sbu-bright-red);
+  border-color: var(--sbu-bright-red);
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+/* Forms */
+.form-label {
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+  color: var(--sbu-dark-gray);
+}
+
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--sbu-red);
+  border-color: var(--sbu-red);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--sbu-red);
+}
+
+/* Cards */
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  background-color: var(--sbu-red);
+  color: white;
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.card-header h5 {
+  color: white;
+}
+
+.card-title {
+  font-family: var(--font-bitter);
+  color: var(--sbu-dark-gray);
+}
+
+.card-text {
+  font-family: var(--font-barlow);
+}
+
+/* Tables */
+.table-dark {
+  background-color: var(--sbu-red);
+}
+
+.table-dark th {
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  background-color: var(--sbu-black);
+  color: white;
+  border-top: none;
+  padding: 1rem 0;
+}
+
+.footer h1, .footer h2, .footer h3, .footer h4, .footer h5, .footer h6 {
+  color: white;
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+}
+
+.footer p {
+  font-family: var(--font-barlow);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+/* Accessibility improvements */
+.btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible {
+  outline: 2px solid var(--sbu-red);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--sbu-red);
+  color: white !important;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 9999;
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+.skip-link:focus {
+  top: 0;
+  background: var(--sbu-red);
+  color: white !important;
+}
+
+.skip-link:hover,
+.skip-link:visited,
+.skip-link:active {
+  background: var(--sbu-red);
+  color: white !important;
+  text-decoration: none;
+}
+
+/* Alert styles */
+.alert-success {
+  background-color: var(--sbu-celery);
+  border-color: var(--sbu-forest-green);
+  color: var(--sbu-forest-green);
+  border-left: 4px solid var(--sbu-forest-green);
+}
+
+.alert-warning {
+  background-color: var(--sbu-pear);
+  border-color: var(--sbu-dark-gray);
+  color: var(--sbu-dark-gray);
+  border-left: 4px solid var(--sbu-dark-gray);
+}
+
+.alert-danger {
+  background-color: #fff5f5;
+  border-color: var(--sbu-bright-red);
+  color: var(--sbu-bright-red);
+  border-left: 4px solid var(--sbu-bright-red);
+}
+
+.alert-info {
+  background-color: #f0fbff;
+  border-color: var(--sbu-turquoise);
+  color: var(--sbu-turquoise);
+  border-left: 4px solid var(--sbu-turquoise);
+}
+
+/* Override Bootstrap text color classes with SBU colors */
+.text-success { color: var(--sbu-forest-green) !important; }
+.text-warning { color: var(--sbu-dark-gray) !important; }
+.text-danger { color: var(--sbu-bright-red) !important; }
+.text-info { color: var(--sbu-turquoise) !important; }
+.text-primary { color: var(--sbu-red) !important; }
+
+/* Text colors */
+.text-sbu-red { color: var(--sbu-red) !important; }
+.text-sbu-dark-gray { color: var(--sbu-dark-gray) !important; }
+.text-sbu-medium-gray { color: var(--sbu-medium-gray) !important; }
+
+/* Background colors */
+.bg-sbu-red { background-color: var(--sbu-red) !important; }
+.bg-sbu-cream { background-color: var(--sbu-cream) !important; }
+.bg-sbu-black { background-color: var(--sbu-black) !important; }
+
+/* Navbar button styles */
+.navbar .btn-link {
+  color: white !important;
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  background: none;
+  padding: 0.5rem 1rem;
+}
+
+.navbar .btn-link:hover {
+  color: var(--sbu-cream) !important;
+  text-decoration: none;
+}
+
+.navbar .btn-link:focus {
+  color: var(--sbu-cream) !important;
+  text-decoration: none;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--sbu-red);
+}
+
+/* KPI Card Styles - SBU Brand Colors */
+.kpi-card {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: white;
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card .card-body {
+  padding: 1.5rem;
+}
+
+.kpi-card h6 {
+  font-family: var(--font-alumni-sans);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.kpi-card h3, .kpi-card h2 {
+  font-family: var(--font-alumni-sans);
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0;
+  font-size: 2.5rem;
+}
+
+.kpi-card .fas {
+  color: white;
+  opacity: 0.8;
+}
+
+.kpi-blue { background-color: var(--sbu-royal-blue); }
+.kpi-red { background-color: var(--sbu-bright-red); }
+.kpi-darkred { background-color: var(--sbu-dark-red); }
+.kpi-turquoise { background-color: var(--sbu-turquoise); }
+.kpi-navy { background-color: var(--sbu-navy-blue); }
+
+/* KPI Link Styles */
+.kpi-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.kpi-link:hover,
+.kpi-link:focus {
+  text-decoration: none;
+  color: inherit;
+}
+
+.kpi-link:hover .kpi-card {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.kpi-link:focus .kpi-card {
+  outline: 2px solid var(--sbu-red);
+  outline-offset: 4px;
+}
+
+/* Custom Warning Table Styles */
+.table-danger-custom {
+  border-left: 5px solid var(--sbu-bright-red);
+  background-color: #fff5f5;
+}
+
+.table-warning-custom {
+  border-left: 5px solid var(--sbu-pear);
+  background-color: #fefef5;
+}
+
+.table-info-custom {
+  border-left: 5px solid var(--sbu-turquoise);
+  background-color: #f0fbff;
+}
+
+/* Icon colors for different contexts */
+.icon-light { color: white; }
+.icon-dark { color: var(--sbu-dark-gray); }
+.icon-primary { color: var(--sbu-red); }
+.icon-success { color: var(--sbu-forest-green); }
+.icon-warning { color: var(--sbu-dark-gray); }
+.icon-danger { color: var(--sbu-bright-red); }
+
+/* Footer About Link */
+.footer-link {
+  color: var(--sbu-cream) !important;
+  text-decoration: none;
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+  color: white !important;
+  text-decoration: underline;
+}
+
+/* About Modal Changelog Styles */
+.changelog {
+  font-family: var(--font-barlow);
+}
+
+.changelog h6 {
+  font-family: var(--font-alumni-sans);
+  font-weight: 600;
+  margin-top: 1rem;
+  border-bottom: 2px solid var(--sbu-light-gray);
+  padding-bottom: 0.25rem;
+}
+
+.changelog ul {
+  margin-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.changelog li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.changelog .fw-semibold {
+  font-weight: 600;
+  color: var(--sbu-dark-gray);
+}
+
+/* DataTables Bootstrap 5 Integration Overrides */
+#vehiclesTable_wrapper {
+  margin-bottom: 100px; /* Add space above footer to prevent overlap */
+}
+
+#vehiclesTable_wrapper .dt-buttons .btn {
+  font-family: var(--font-barlow-semi);
+  font-weight: 500;
+}
+
+#vehiclesTable_wrapper .dataTables_filter {
+  overflow: visible; /* Fix search input highlight clipping */
+}
+
+#vehiclesTable_wrapper .dataTables_filter input,
+#vehiclesTable_wrapper .dataTables_length select,
+#vehiclesTable tfoot input {
+  font-family: var(--font-barlow);
+}
+
+/* SBU focus styles on DataTables inputs */
+#vehiclesTable_wrapper input:focus,
+#vehiclesTable_wrapper select:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--sbu-red);
+  border-color: var(--sbu-red);
+  position: relative; /* Ensure focus ring appears above adjacent elements */
+  z-index: 10;
+}
+
+/* Column filter inputs in footer */
+#vehiclesTable tfoot input {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Ensure alert colors override DataTables */
+#vehiclesTable .text-danger {
+  color: var(--sbu-bright-red) !important;
+}
+
+#vehiclesTable .text-warning {
+  color: var(--sbu-dark-gray) !important;
+}
+
+#vehiclesTable .badge {
+  font-size: 0.875rem;
+}

@@ -1,0 +1,171 @@
+@page
+@model CRCardSwipe.Pages.CardSwipe.IndexModel
+@{
+    ViewData["Title"] = "Card Swipe";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-id-card icon-primary"></i> CARD SWIPE</h1>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="@(Model.IsSuccess ? "status" : "alert")" aria-live="@(Model.IsSuccess ? "polite" : "assertive")">
+        <i class="fas @(Model.IsSuccess ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-credit-card"></i> Swipe Card or Enter SBUID</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    @if (Model.RequiresBuildingSelection)
+                    {
+                        <div class="mb-3">
+                            <label for="building" class="form-label">Building</label>
+                            <select asp-for="SelectedBuildingId" class="form-select" id="building"
+                                    asp-items="@(new SelectList(Model.Buildings, "BuildingId", "Name"))">
+                                <option value="">-- Select Building --</option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label for="cardData" class="form-label">Card Data / SBUID</label>
+                        <input asp-for="CardData" class="form-control form-control-lg" id="cardData"
+                               placeholder="Swipe card or enter 9-digit SBUID"
+                               autofocus autocomplete="off" />
+                        <div class="form-text">Swipe a card or enter a 9-digit SBUID</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Note (Optional)</label>
+                        <input asp-for="Note" class="form-control" id="note" maxlength="500"
+                               placeholder="Optional note for this visit" />
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> Log Visit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> Recent Visits Today</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentVisits.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <caption class="visually-hidden">Recent visits logged today</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Time</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">SBUID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var visit in Model.RecentVisits)
+                                {
+                                    <tr>
+                                        <td>@visit.SwipeTime.ToString("h:mm tt")</td>
+                                        <td>@visit.FullName</td>
+                                        <td><code>@visit.SBUID</code></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <a asp-page="ViewVisits" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-list"></i> View All Visits
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">No visits logged today.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardInput = document.getElementById('cardData');
+            if (!cardInput) return;
+
+            let submitTimer = null;
+            let hasSubmitted = false;
+
+            function isMagStripe(val) {
+                return val.length > 100 && (val.includes('%') || val.includes(';'));
+            }
+
+            function isHidCard(val) {
+                return /^[0-9a-fA-F]{28}$/.test(val);
+            }
+
+            function doSubmit() {
+                if (hasSubmitted) return;
+                hasSubmitted = true;
+                clearTimeout(submitTimer);
+                cardInput.closest('form').submit();
+            }
+
+            cardInput.addEventListener('input', function() {
+                if (hasSubmitted) return;
+                const val = this.value;
+
+                // HID card: exactly 28 hex chars — submit immediately, no debounce needed
+                if (isHidCard(val)) {
+                    doSubmit();
+                    return;
+                }
+
+                // Mag stripe: debounce 50ms to ensure full track data is buffered
+                if (isMagStripe(val)) {
+                    clearTimeout(submitTimer);
+                    submitTimer = setTimeout(doSubmit, 50);
+                }
+            });
+
+            // Intercept card reader's trailing Enter to prevent duplicate submission
+            cardInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && (isMagStripe(this.value) || isHidCard(this.value))) {
+                    e.preventDefault();
+                    doSubmit();
+                }
+                // Plain Enter on short input (manual SBUID) submits normally.
+            });
+
+            cardInput.focus();
+
+            // Re-focus and reset after alert dismissal
+            document.querySelectorAll('.alert .btn-close').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    setTimeout(function() {
+                        cardInput.focus();
+                        cardInput.value = '';
+                    }, 100);
+                });
+            });
+        });
+    </script>
+}

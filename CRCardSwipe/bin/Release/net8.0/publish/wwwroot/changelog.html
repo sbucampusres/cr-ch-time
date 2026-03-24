@@ -1,0 +1,148 @@
+<div class="changelog">
+    <h6 class="text-primary mt-3">December 19, 2025</h6>
+    <p class="fw-semibold mb-2">Dashboard KPI Links</p>
+    <ul>
+        <li>Dashboard KPI cards are now clickable links that navigate to the Vehicles page with appropriate filters</li>
+        <li>Total Vehicles links to all vehicles (no filter)</li>
+        <li>Inspections Due filters for inspections due within 30 days</li>
+        <li>Oil Changes Due filters for overdue oil changes</li>
+        <li>Open Notes filters for vehicles with at least one open note</li>
+        <li>Added hover effects to KPI cards for better user experience</li>
+    </ul>
+    <p class="fw-semibold mb-2">DataTable Filtering Enhancements</p>
+    <ul>
+        <li>Date filters for the Vehicles table now supports using < (less than) and > (greater than) at the beginning of a date value.</li>
+        <li>Notes column also supports filtering by < (less than) and > (greater than)</li>
+    </ul>
+    <h6 class="text-primary mt-3">December 18, 2025</h6>
+    <p class="fw-semibold mb-2">Added Excel export</p>
+    <ul>
+        <li>Excel Export button created at top of page, export contains current DataTable values</li>
+    </ul>    
+    <p class="fw-semibold mb-2">Add Filter and Sort to Vehicle List</p>
+    <ul>
+        <li>Enhanced the vehicles index page with DataTables for advanced filtering, sorting, and Excel export.</li>
+        <li>Added column-specific filters in the table footer</li>
+        <li>Synchronized filter and pagination state with URL parameters</li>
+        <li>Updated CSS for DataTables Bootstrap 5 integration</li>
+        <li>Renamed Open Notes to Notes for aesthetic reasons</li>
+        <li>Filter/sort/pagination can be controlled by URL parameters for future linking to KPIs</li>
+    </ul>    
+    <p class="fw-semibold mb-2">Squawk Sheet Print Layout Fix</p>
+    <ul>
+        <li>Fixed excessive vertical spacing in multi-line textarea fields when printing</li>
+        <li>Updated JavaScript to calculate textarea height based on print styles instead of screen styles</li>
+        <li>Changed textarea overflow from 'visible' to 'hidden' in print CSS to prevent content doubling</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">December 15, 2025</h6>
+
+    <p class="fw-semibold mb-2">Changelog System and ResponsibleEmail Field</p>
+    <ul>
+        <li>Added ResponsibleEmail field to Vehicle model, database schema, and UI</li>
+        <li>Implemented About modal in site footer with support contact and release notes</li>
+        <li>Created external changelog.html file for easier maintenance</li>
+        <li>Improved null safety in index page and work order creation</li>
+        <li>Updated SQL schema for new ResponsibleEmail field</li>
+    </ul>
+
+    <p class="fw-semibold mb-2">Vehicle List Refinements</p>
+    <ul>
+        <li>Removed 'Last Inspection' and 'Oil Changed On' columns from vehicle index page</li>
+    </ul>
+
+    <p class="fw-semibold mb-2">WCAG 2.2 AA Accessibility Improvements</p>
+    <ul>
+        <li>Added ARIA roles and live regions to validation summaries and alert messages</li>
+        <li>Implemented skip links for keyboard navigation</li>
+        <li>Added main content focus management</li>
+        <li>Enhanced table headers with proper scope attributes</li>
+        <li>Improved error summary focus on validation failures</li>
+        <li>Refactored user account creation forms for better clarity and accessibility</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">December 8, 2025</h6>
+    <p class="fw-semibold mb-2">Print Layout Enhancements</p>
+    <ul>
+        <li>Updated work order print header branding to 'CR Fleet Management' and 'Campus Residences'</li>
+        <li>Added print-only footer with system information and URL</li>
+        <li>Improved print styles: hidden number input spinners and disabled textarea resizing</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">December 1, 2025</h6>
+    <p class="fw-semibold mb-2">Vehicle List and Squawk Sheet Updates</p>
+    <ul>
+        <li>Swapped column order on vehicle list for better usability</li>
+        <li>Implemented new squawk/work order print format</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">November 25, 2025</h6>
+    <p class="fw-semibold mb-2">UI Improvements</p>
+    <ul>
+        <li>Fixed layout for "add new note" box</li>
+        <li>Merged latest changes from main branch</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">October 7, 2025</h6>
+    <p class="fw-semibold mb-2">Vehicle Management Enhancement</p>
+    <ul>
+        <li>Removed VIN restriction - all vehicles can now generate squawk sheets</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">October 3, 2025</h6>
+    <p class="fw-semibold mb-2">Security and Authorization Overhaul</p>
+    <ul>
+        <li>Implemented Shibboleth authentication middleware</li>
+        <li>Refactored identity and authorization handling across the application</li>
+        <li>Removed ASP.NET Identity dependencies, switched to custom authentication</li>
+        <li>Added role-based authorization policies:
+            <ul>
+                <li>Administrator: Full system access including user management</li>
+                <li>Operator: Can edit vehicles, create/close notes, and create work orders</li>
+                <li>Viewer: Read-only access to vehicles and notes</li>
+            </ul>
+        </li>
+        <li>Enhanced user creation forms with NetID lookup feature</li>
+        <li>Added user account management pages with access level controls</li>
+        <li>Fixed "Unauthorized" page display on first site load</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">October 1, 2025</h6>
+    <p class="fw-semibold mb-2">Visual Improvements</p>
+    <ul>
+        <li>Enhanced h5 heading font colors for better readability</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">September 27, 2025</h6>
+    <p class="fw-semibold mb-2">Branding and Cleanup</p>
+    <ul>
+        <li>Applied Stony Brook University branding throughout the application</li>
+        <li>Cleaned up build artifacts and unnecessary files</li>
+        <li>Removed compiled directories from repository</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">September 25, 2025</h6>
+    <p class="fw-semibold mb-2">IIS Deployment and Bug Fixes</p>
+    <ul>
+        <li>Fixed application routes for running on IIS</li>
+        <li>Resolved note creation functionality</li>
+        <li>Updated .gitignore for better source control management</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">September 19, 2025</h6>
+    <p class="fw-semibold mb-2">Repository Maintenance</p>
+    <ul>
+        <li>Updated .gitignore configuration</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">September 18, 2025</h6>
+    <p class="fw-semibold mb-2">Project Launch</p>
+    <ul>
+        <li>Initial commit: Created CR Fleet Management application</li>
+        <li>Set up ASP.NET Core 8.0 Razor Pages architecture</li>
+        <li>Configured Oracle database integration</li>
+        <li>Implemented core vehicle management features</li>
+        <li>Created basic note/squawk sheet system</li>
+        <li>Established project structure and dependencies</li>
+    </ul>
+</div>
