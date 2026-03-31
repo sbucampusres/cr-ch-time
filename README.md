@@ -1,4 +1,4 @@
-# CRCardSwipe
+# CRCHTime
 
 Access control and timesheet management system for Campus Residences at Stony Brook University. Processes magnetic stripe card swipes, manages staff check-ins/check-outs, tracks contractor access, and generates timesheets and visit reports for facilities operations.
 
@@ -68,8 +68,8 @@ One bug was fixed during the rewrite: the original C# called `CRFCCS_GET_ALL_ROL
 ## Project Structure
 
 ```
-CRCardSwipe/
-├── CRCardSwipe/
+CRCHTime/
+├── CRCHTime/
 │   ├── Pages/
 │   │   ├── CardSwipe/        # Swipe input and visit history
 │   │   ├── Staff/            # Check-in/out and timesheets
@@ -96,10 +96,10 @@ CRCardSwipe/
 
 ```bash
 dotnet build
-dotnet run --project CRCardSwipe
+dotnet run --project CRCHTime
 ```
 
-Configuration (database credentials, connection strings) goes in `CRCardSwipe/appsettings.json`, which is gitignored. Use `appsettings.TEMPLATE.json` as a starting point.
+Configuration (database credentials, connection strings) goes in `CRCHTime/appsettings.json`, which is gitignored. Use `appsettings.TEMPLATE.json` as a starting point.
 
 ## Deployment
 

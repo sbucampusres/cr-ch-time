@@ -1,0 +1,246 @@
+@page
+@model CRCHTime.Pages.Admin.ManageStaffModel
+@{
+    ViewData["Title"] = "Manage Staff";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-users-cog icon-primary"></i> MANAGE STAFF</h1>
+        <p class="text-muted">Application: <strong>@Model.CurrentApplication</strong></p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show"
+         role="@(Model.IsSuccess ? "status" : "alert")"
+         aria-live="@(Model.IsSuccess ? "polite" : "assertive")">
+        <i class="fas @(Model.IsSuccess ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <a asp-page="AddStaff" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Add Staff Member
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Staff List</h5>
+            </div>
+            <div class="card-body border-bottom">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" id="statusFilterLabel">Status</label>
+                        <div class="btn-group d-flex" role="group" aria-labelledby="statusFilterLabel">
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterActive" value="active" checked>
+                            <label class="btn btn-outline-success btn-sm" for="filterActive">Active</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterTerminated" value="terminated">
+                            <label class="btn btn-outline-secondary btn-sm" for="filterTerminated">Terminated</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all">
+                            <label class="btn btn-outline-primary btn-sm" for="filterAll">All</label>
+                        </div>
+                    </div>
+                    <div class="col-sm">
+                        <label for="staffSearch" class="form-label fw-semibold mb-1">Search</label>
+                        <input type="search" id="staffSearch" class="form-control form-control-sm"
+                               placeholder="NetID or name…" aria-label="Search by NetID or name">
+                    </div>
+                    <div class="col-sm-auto">
+                        <span id="staffCount" class="text-muted small"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.StaffList.Any())
+                {
+                    <p class="p-3 text-muted mb-0">No staff members found for this application.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="staffTable">
+                            <caption class="visually-hidden">Staff members for application @Model.CurrentApplication</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="sortable" data-col="0" aria-sort="ascending">
+                                        NetID <span class="sort-icon">↑</span>
+                                    </th>
+                                    <th scope="col" class="sortable" data-col="1" aria-sort="none">
+                                        Name <span class="sort-icon text-muted">↕</span>
+                                    </th>
+                                    <th scope="col" class="sortable" data-col="2" aria-sort="none">
+                                        Role <span class="sort-icon text-muted">↕</span>
+                                    </th>
+                                    <th scope="col" class="sortable" data-col="3" aria-sort="none">
+                                        Status <span class="sort-icon text-muted">↕</span>
+                                    </th>
+                                    <th scope="col" class="sortable" data-col="4" aria-sort="none">
+                                        Termination Date <span class="sort-icon text-muted">↕</span>
+                                    </th>
+                                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.StaffList.OrderBy(i => i.Staff.NetId))
+                                {
+                                    <tr class="@(item.Staff.IsTerminated ? "table-secondary" : "")"
+                                        data-status="@(item.Staff.IsTerminated ? "terminated" : "active")"
+                                        data-netid="@item.Staff.NetId.ToLower()"
+                                        data-name="@(item.DisplayName?.ToLower() ?? "")"
+                                        data-role="@(item.Role?.ToLower() ?? "")">
+                                        <td><code>@item.Staff.NetId</code></td>
+                                        <td>@(item.DisplayName ?? "—")</td>
+                                        <td>@(item.Role ?? "—")</td>
+                                        <td>
+                                            @if (item.Staff.IsTerminated)
+                                            {
+                                                <span class="badge bg-secondary">Terminated</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.Staff.TerminationDate.HasValue)
+                                            {
+                                                @item.Staff.TerminationDate.Value.ToString("MM/dd/yyyy")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-page="EditStaff" asp-route-netId="@item.Staff.NetId"
+                                               class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            @if (!item.Staff.IsTerminated)
+                                            {
+                                                <form method="post" asp-page-handler="Terminate" class="d-inline">
+                                                    <input type="hidden" asp-for="TerminateNetId" value="@item.Staff.NetId" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('Terminate @item.Staff.NetId? They will no longer be able to log in.')">
+                                                        <i class="fas fa-user-slash"></i> Terminate
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const table = document.getElementById('staffTable');
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const rows = () => Array.from(tbody.querySelectorAll('tr'));
+    const searchInput = document.getElementById('staffSearch');
+    const statusRadios = document.querySelectorAll('input[name="statusFilter"]');
+    const countEl = document.getElementById('staffCount');
+
+    let sortCol = 0, sortAsc = true;
+
+    function getStatusFilter() {
+        return document.querySelector('input[name="statusFilter"]:checked')?.value ?? 'active';
+    }
+
+    function applyFilters() {
+        const status = getStatusFilter();
+        const q = searchInput.value.trim().toLowerCase();
+        let visible = 0;
+
+        rows().forEach(row => {
+            const rowStatus = row.dataset.status;
+            const matchesStatus = status === 'all' || rowStatus === status;
+            const matchesSearch = !q ||
+                row.dataset.netid.includes(q) ||
+                row.dataset.name.includes(q) ||
+                row.dataset.role.includes(q);
+
+            const show = matchesStatus && matchesSearch;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        countEl.textContent = visible + ' record' + (visible !== 1 ? 's' : '');
+    }
+
+    function sortTable(col) {
+        if (sortCol === col) {
+            sortAsc = !sortAsc;
+        } else {
+            sortCol = col;
+            sortAsc = true;
+        }
+
+        // Update aria-sort and icons on headers
+        table.querySelectorAll('th.sortable').forEach((th, i) => {
+            const icon = th.querySelector('.sort-icon');
+            if (i === col) {
+                th.setAttribute('aria-sort', sortAsc ? 'ascending' : 'descending');
+                icon.textContent = sortAsc ? '↑' : '↓';
+                icon.classList.remove('text-muted');
+            } else {
+                th.setAttribute('aria-sort', 'none');
+                icon.textContent = '↕';
+                icon.classList.add('text-muted');
+            }
+        });
+
+        const sorted = rows().sort((a, b) => {
+            const cells = [a, b].map(r => r.querySelectorAll('td')[col]?.textContent.trim() ?? '');
+            // For termination date col, treat '—' as empty (sort last when asc)
+            const [va, vb] = cells;
+            const isEmpty = v => v === '—' || v === '';
+            if (isEmpty(va) && isEmpty(vb)) return 0;
+            if (isEmpty(va)) return sortAsc ? 1 : -1;
+            if (isEmpty(vb)) return sortAsc ? -1 : 1;
+            const cmp = va.localeCompare(vb, undefined, { sensitivity: 'base', numeric: true });
+            return sortAsc ? cmp : -cmp;
+        });
+
+        sorted.forEach(r => tbody.appendChild(r));
+        applyFilters();
+    }
+
+    table.querySelectorAll('th.sortable').forEach((th, i) => {
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', () => sortTable(i));
+        th.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sortTable(i); }
+        });
+        th.setAttribute('tabindex', '0');
+        th.setAttribute('role', 'button');
+    });
+
+    statusRadios.forEach(r => r.addEventListener('change', applyFilters));
+    searchInput.addEventListener('input', applyFilters);
+
+    // Initial filter (Active by default)
+    applyFilters();
+}());
+</script>
+}

@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ASP.NET Core / .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+*.log
+
+# Publish output
+publish/
+
+# Sensitive configuration
+**/appsettings.json
+!**/appsettings.TEMPLATE.json
+!**/appsettings.Development.json
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml

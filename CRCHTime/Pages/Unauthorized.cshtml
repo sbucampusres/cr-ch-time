@@ -1,0 +1,40 @@
+@page
+@model CRCHTime.Pages.UnauthorizedModel
+@{
+    ViewData["Title"] = "Unauthorized Access";
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-danger" role="alert">
+                <h1 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> Unauthorized Access
+                </h1>
+                <hr>
+                <p class="mb-0">
+                    You do not have permission to access the Campus Residences Conference Housing Time System.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Access Denied</h5>
+                    <p class="card-text">
+                        Your account is not authorized to use this application. This may be because:
+                    </p>
+                    <ul>
+                        <li>You have not been granted access to the system</li>
+                        <li>Your access has been revoked or expired</li>
+                        <li>Your account has been deactivated</li>
+                    </ul>
+                    <p class="card-text mt-3">
+                        If you believe you should have access to this system, please contact the Campus Residences
+                        IT administrator to request access or verify your account status.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

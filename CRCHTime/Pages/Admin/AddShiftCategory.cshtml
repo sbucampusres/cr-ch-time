@@ -1,0 +1,54 @@
+@page
+@model CRCHTime.Pages.Admin.AddShiftCategoryModel
+@{
+    ViewData["Title"] = "Add Shift Category";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-plus icon-primary"></i> ADD SHIFT CATEGORY</h1>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <fieldset>
+                        <legend class="visually-hidden">New Shift Category</legend>
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Category.Name" class="form-label">Category Name <span aria-hidden="true" class="text-danger">*</span></label>
+                            <input asp-for="Category.Name" class="form-control" required autofocus
+                                   aria-describedby="nameHelp" aria-required="true" />
+                            <div id="nameHelp" class="form-text">The name shown to staff at check-in.</div>
+                            <span asp-validation-for="Category.Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Category.Description" class="form-label">Description</label>
+                            <textarea asp-for="Category.Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Category.Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Category
+                            </button>
+                            <a asp-page="/Admin/ManageShiftCategories" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

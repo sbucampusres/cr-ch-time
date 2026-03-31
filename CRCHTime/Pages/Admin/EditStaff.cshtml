@@ -1,0 +1,68 @@
+@page "{netId}"
+@model CRCHTime.Pages.Admin.EditStaffModel
+@{
+    ViewData["Title"] = $"Edit Staff — {Model.NetId}";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-user-edit icon-primary"></i> EDIT STAFF MEMBER</h1>
+        <p class="text-muted">Application: <strong>@Model.CurrentApplication</strong></p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show"
+         role="@(Model.IsSuccess ? "status" : "alert")"
+         aria-live="@(Model.IsSuccess ? "polite" : "assertive")">
+        <i class="fas @(Model.IsSuccess ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-edit"></i> Edit: <code>@Model.NetId</code></h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" asp-for="NetId" />
+                    <fieldset>
+                        <legend class="visually-hidden">Edit staff member details</legend>
+
+                        <div class="mb-3">
+                            <p class="form-label mb-1">NetID</p>
+                            <p class="form-control-plaintext fw-bold"><code>@Model.NetId</code></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Role" class="form-label">Role</label>
+                            <select asp-for="Role" id="Role" class="form-select">
+                                <option value="">-- Select Role --</option>
+                                <option value="chadmin">Administrator</option>
+                                <option value="chuser">Staff</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="TerminationDate" class="form-label">Termination Date</label>
+                            <input asp-for="TerminationDate" id="TerminationDate" type="date" class="form-control" />
+                            <div class="form-text">Clear this field to make the staff member active with no planned end date.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a asp-page="ManageStaff" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

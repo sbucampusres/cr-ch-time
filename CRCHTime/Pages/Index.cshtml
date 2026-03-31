@@ -1,0 +1,49 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-tachometer-alt icon-primary"></i> DASHBOARD</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt icon-light"></i> QUICK ACTIONS</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-page="/Staff/CheckIn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Staff Check-In
+                    </a>
+                    <a asp-page="/Staff/CheckOut" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-out-alt"></i> Staff Check-Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> SYSTEM INFO</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">
+                    <strong>Current Time:</strong> @DateTime.Now.ToString("dddd, MMMM d, yyyy h:mm tt")
+                </p>
+                <p class="text-muted mb-2">
+                    <strong>Logged in as:</strong> @User.Identity?.Name
+                </p>
+                <p class="text-muted mb-0">
+                    <strong>Access Level:</strong> @User.Claims.FirstOrDefault(c => c.Type == "AccessLevel")?.Value
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

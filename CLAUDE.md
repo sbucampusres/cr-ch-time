@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CRCardSwipe is an ASP.NET Core 8.0 web application for Campus Residences access control and timesheet management at Stony Brook University. It processes card swipe data, manages staff check-ins/check-outs, tracks visits, and provides administrative functions for facilities and housing operations.
+CRCHTime is an ASP.NET Core 8.0 web application for Campus Residences access control and timesheet management at Stony Brook University. It processes card swipe data, manages staff check-ins/check-outs, tracks visits, and provides administrative functions for facilities and housing operations.
 
 **Built from cr-app-template**: This project was cloned from the Campus Residences ASP.NET Core application template and customized with CardSwipe-specific business logic. It inherits the template's:
 - Shibboleth SSO authentication
@@ -20,14 +20,14 @@ CRCardSwipe is an ASP.NET Core 8.0 web application for Campus Residences access 
 
 ### Build and Run
 - `dotnet build` - Build the application
-- `dotnet run --project CRCardSwipe` - Run the application locally
-- `dotnet build CRCardSwipe/CRCardSwipe.sln` - Build using solution file
-- `dotnet watch run --project CRCardSwipe` - Run with hot reload for development
+- `dotnet run --project CRCHTime` - Run the application locally
+- `dotnet build CRCHTime/CRCHTime.sln` - Build using solution file
+- `dotnet watch run --project CRCHTime` - Run with hot reload for development
 
 ### Publish to IIS
 The `.csproj` has an `AfterTargets="Publish"` target that automatically copies output to the RDP share after every publish. Always use:
 ```bash
-dotnet publish CRCardSwipe/CRCardSwipe.csproj -c Release -f net8.0 -r win-x64 --no-self-contained
+dotnet publish CRCHTime/CRCHTime.csproj -c Release -f net8.0 -r win-x64 --no-self-contained
 ```
 **Do not specify `--output`** — the post-publish target copies to `/Users/wa/Documents/RDP Share/publish/cr-cardswipe` automatically. Specifying `--output` directly to the RDP share path causes an incomplete copy due to the space in the path.
 
@@ -256,8 +256,8 @@ Seven distinct "applications" (role contexts) mapped to template roles:
     "KaceConnection": "Server=***;Database=ORG3;User=***;Password=***;" // Optional MySQL
   },
   "TemplateSettings": {
-    "ApplicationName": "CRCardSwipe",
-    "ApplicationFullName": "Campus Residences Card Swipe System",
+    "ApplicationName": "CRCHTime",
+    "ApplicationFullName": "Campus Residences Conference Housing Time System",
     "TablePrefix": "WS_CR_CS_",
     "OracleSchemaName": "CRADMIN"
   },
@@ -467,12 +467,12 @@ When generating code, default to WCAG 2.1 AA compliance using the following rule
 ## Project Structure
 
 ```
-CRCardSwipe/
-├── CRCardSwipe.sln
+CRCHTime/
+├── CRCHTime.sln
 ├── SETUP.md                          # Template setup instructions
 ├── RENAME_CHECKLIST.md               # Template customization guide
 ├── appsettings.TEMPLATE.json         # Configuration template
-├── CRCardSwipe/
+├── CRCHTime/
 │   ├── Program.cs                    # Application entry point
 │   ├── appsettings.json              # Configuration (gitignored)
 │   ├── Pages/
@@ -514,7 +514,7 @@ CRCardSwipe/
 │   │   └── lib/                      # Bootstrap 5, jQuery
 │   └── Deploy/
 │       └── deploy-iis.ps1            # From template
-├── CRCardSwipe.Tests/                # Unit tests
+├── CRCHTime.Tests/                # Unit tests
 ├── sql/
 │   ├── TEMPLATE/                     # Template SQL scripts
 │   │   ├── 01_CREATE_USERS_TABLE.sql
@@ -530,7 +530,7 @@ CRCardSwipe/
 ### Starting from Template
 1. Clone cr-app-template repository
 2. Follow `SETUP.md` to configure basic settings
-3. Use `RENAME_CHECKLIST.md` to rename from template to CRCardSwipe
+3. Use `RENAME_CHECKLIST.md` to rename from template to CRCHTime
 4. Run template SQL scripts to create USERS and AUDITLOG tables
 5. Run CardSwipe SQL scripts to create WS_CR_CS package and domain tables
 6. Update `appsettings.json` with CardSwipe-specific configuration
