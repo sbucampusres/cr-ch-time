@@ -34,6 +34,30 @@ CREATE OR REPLACE PACKAGE WS_CR_CH AS
     );
 
     -- --------------------------------------------------------
+    -- Department management (admin)
+    -- --------------------------------------------------------
+
+    PROCEDURE CRCH_GET_ALL_DEPARTMENTS_ADMIN(
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE CRCH_ADD_UPDATE_DEPARTMENT(
+        p_dept_id       IN  NUMBER,
+        p_name          IN  VARCHAR2,
+        p_application   IN  VARCHAR2,
+        p_inactive      IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    );
+
+    PROCEDURE CRCH_DEACTIVATE_DEPARTMENT(
+        p_dept_id       IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    );
+
+    -- --------------------------------------------------------
     -- Updated Staff Check-In (adds p_shift_category_id)
     -- Replaces WS_CR_CARDSWIPE.CRFCCS_STAFF_CHECKIN
     -- --------------------------------------------------------

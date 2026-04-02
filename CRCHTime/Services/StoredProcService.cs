@@ -512,6 +512,114 @@ public class StoredProcService : IStoredProcService
 
     #endregion
 
+    #region Department Management
+
+    public async Task<IEnumerable<Department>> GetAllDepartmentsAdminAsync(string? application)
+    {
+        var departments = new List<Department>();
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_GET_ALL_DEPARTMENTS_ADMIN";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application ?? (object)DBNull.Value;
+            command.Parameters.Add("r_cursor", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                departments.Add(MapDepartmentFromReader(reader));
+            }
+            return departments;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting all departments (admin) for application {Application}", application);
+            return Enumerable.Empty<Department>();
+        }
+    }
+
+    public async Task<OperationResult> AddUpdateDepartmentAsync(Department dept, string auditUser)
+    {
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_ADD_UPDATE_DEPARTMENT";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_dept_id", OracleDbType.Int32).Value = dept.DeptId == 0 ? (object)DBNull.Value : dept.DeptId;
+            command.Parameters.Add("p_name", OracleDbType.Varchar2).Value = dept.Name;
+            command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = dept.Application ?? (object)DBNull.Value;
+            command.Parameters.Add("p_inactive", OracleDbType.Int32).Value = dept.Inactive ? 1 : 0;
+            command.Parameters.Add("p_user", OracleDbType.Varchar2).Value = auditUser;
+
+            var errorParam = new OracleParameter("r_error", OracleDbType.Varchar2, 500);
+            errorParam.Direction = ParameterDirection.Output;
+            command.Parameters.Add(errorParam);
+
+            await command.ExecuteNonQueryAsync();
+
+            var errorValue = errorParam.Value;
+            var errorMessage = (errorValue != null && errorValue != DBNull.Value)
+                ? errorValue.ToString() : string.Empty;
+            if (errorMessage == "null") errorMessage = string.Empty;
+
+            return string.IsNullOrEmpty(errorMessage)
+                ? OperationResult.Succeeded()
+                : OperationResult.Failed(errorMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving department {Name}", dept.Name);
+            return OperationResult.Failed("An error occurred while saving the department.");
+        }
+    }
+
+    public async Task<OperationResult> DeactivateDepartmentAsync(int deptId, string auditUser)
+    {
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_DEACTIVATE_DEPARTMENT";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_dept_id", OracleDbType.Int32).Value = deptId;
+            command.Parameters.Add("p_user", OracleDbType.Varchar2).Value = auditUser;
+
+            var errorParam = new OracleParameter("r_error", OracleDbType.Varchar2, 500);
+            errorParam.Direction = ParameterDirection.Output;
+            command.Parameters.Add(errorParam);
+
+            await command.ExecuteNonQueryAsync();
+
+            var errorValue = errorParam.Value;
+            var errorMessage = (errorValue != null && errorValue != DBNull.Value)
+                ? errorValue.ToString() : string.Empty;
+            if (errorMessage == "null") errorMessage = string.Empty;
+
+            return string.IsNullOrEmpty(errorMessage)
+                ? OperationResult.Succeeded()
+                : OperationResult.Failed(errorMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deactivating department {DeptId}", deptId);
+            return OperationResult.Failed("An error occurred while deactivating the department.");
+        }
+    }
+
+    #endregion
+
     #region Associations
 
     public async Task<bool> AssociateNameAsync(string sbuid, string firstName, string lastName, string application)

@@ -36,6 +36,11 @@ public interface IStoredProcService
     Task<IEnumerable<Company>> GetCompaniesAsync(string? application);
     Task<Department?> GetDepartmentForStaffAsync(string netId, string application);
 
+    // Department Management (admin)
+    Task<IEnumerable<Department>> GetAllDepartmentsAdminAsync(string? application);
+    Task<OperationResult> AddUpdateDepartmentAsync(Department dept, string auditUser);
+    Task<OperationResult> DeactivateDepartmentAsync(int deptId, string auditUser);
+
     // Associations
     Task<bool> AssociateNameAsync(string sbuid, string firstName, string lastName, string application);
     Task<IdAssociation?> GetAssociatedNameAsync(string sbuid, string application);

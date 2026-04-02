@@ -100,6 +100,105 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
     END CRCH_DELETE_SHIFT_CATEGORY;
 
     -- --------------------------------------------------------
+    -- CRCH_GET_ALL_DEPARTMENTS_ADMIN
+    -- Returns all departments for an application, including
+    -- inactive ones, for the admin management page.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_GET_ALL_DEPARTMENTS_ADMIN(
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN r_cursor FOR
+            SELECT  DEPT_ID, NAME, APPLICATION, NVL(INACTIVE, 0) AS INACTIVE
+            FROM    WS_FC_DEPARTMENTS
+            WHERE   APPLICATION = p_application
+            ORDER BY NAME;
+    END CRCH_GET_ALL_DEPARTMENTS_ADMIN;
+
+    -- --------------------------------------------------------
+    -- CRCH_ADD_UPDATE_DEPARTMENT
+    -- Inserts (p_dept_id NULL/0) or updates a department row.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_ADD_UPDATE_DEPARTMENT(
+        p_dept_id       IN  NUMBER,
+        p_name          IN  VARCHAR2,
+        p_application   IN  VARCHAR2,
+        p_inactive      IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    ) IS
+        v_new_id    NUMBER;
+        v_count     NUMBER;
+    BEGIN
+        r_error := NULL;
+
+        IF p_dept_id IS NULL OR p_dept_id = 0 THEN
+            -- Check for duplicate name within the application
+            SELECT COUNT(*) INTO v_count
+            FROM   WS_FC_DEPARTMENTS
+            WHERE  NAME        = p_name
+            AND    APPLICATION = p_application;
+
+            IF v_count > 0 THEN
+                r_error := 'A department with that name already exists.';
+                RETURN;
+            END IF;
+
+            SELECT NVL(MAX(DEPT_ID), 0) + 1 INTO v_new_id
+            FROM   WS_FC_DEPARTMENTS;
+
+            INSERT INTO WS_FC_DEPARTMENTS (DEPT_ID, NAME, APPLICATION, INACTIVE)
+            VALUES (v_new_id, p_name, p_application, NVL(p_inactive, 0));
+        ELSE
+            UPDATE WS_FC_DEPARTMENTS
+            SET    NAME        = p_name,
+                   APPLICATION = p_application,
+                   INACTIVE    = NVL(p_inactive, 0)
+            WHERE  DEPT_ID = p_dept_id;
+
+            IF SQL%ROWCOUNT = 0 THEN
+                r_error := 'Department not found.';
+                RETURN;
+            END IF;
+        END IF;
+
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            r_error := 'Error saving department: ' || SQLERRM;
+    END CRCH_ADD_UPDATE_DEPARTMENT;
+
+    -- --------------------------------------------------------
+    -- CRCH_DEACTIVATE_DEPARTMENT
+    -- Soft-deactivates a department by setting INACTIVE = 1.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_DEACTIVATE_DEPARTMENT(
+        p_dept_id       IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    ) IS
+    BEGIN
+        r_error := NULL;
+
+        UPDATE WS_FC_DEPARTMENTS
+        SET    INACTIVE = 1
+        WHERE  DEPT_ID  = p_dept_id;
+
+        IF SQL%ROWCOUNT = 0 THEN
+            r_error := 'Department not found.';
+            RETURN;
+        END IF;
+
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            r_error := 'Error deactivating department: ' || SQLERRM;
+    END CRCH_DEACTIVATE_DEPARTMENT;
+
+    -- --------------------------------------------------------
     -- CRCH_STAFF_CHECKIN
     -- Updated check-in that stores the shift category.
     -- Validates: not already checked in, not terminated.
