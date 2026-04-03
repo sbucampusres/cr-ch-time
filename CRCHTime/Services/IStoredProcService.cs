@@ -54,6 +54,11 @@ public interface IStoredProcService
     // Reports
     Task<IEnumerable<TimesheetEntry>> GetTimecardAsync(DateTime startDate, DateTime endDate, string? netId, int? departmentId, string? application);
 
+    // Allotments
+    Task<IEnumerable<Allotment>> GetAllotmentsAsync(string application, int year);
+    Task<OperationResult> UpsertAllotmentAsync(string application, int year, int deptId, int categoryId, decimal? hours, string modifiedBy);
+    Task<IEnumerable<(int DeptId, int CategoryId, double HoursUsed)>> GetHoursUsedAsync(string application, int year);
+
     // Student Info (from external procedures)
     Task<string?> GetRoomAsync(string sbuid);
     Task<int?> GetAgeAsync(string sbuid);

@@ -26,7 +26,11 @@ public class CheckInModel : PageModel
     public string NetId { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public IEnumerable<ShiftCategory> ShiftCategories { get; set; } = new List<ShiftCategory>();
+    public IList<Models.Entities.Department> Departments { get; set; } = [];
     public string CurrentApplication { get; set; } = string.Empty;
+
+    [BindProperty]
+    public int? DepartmentId { get; set; }
 
     [BindProperty]
     public int? ShiftCategoryId { get; set; }
@@ -44,6 +48,11 @@ public class CheckInModel : PageModel
         CurrentApplication = _appContextService.GetCurrentApplication();
 
         ShiftCategories = await _storedProcService.GetShiftCategoriesAsync(CurrentApplication);
+        Departments = (await _storedProcService.GetDepartmentsAsync(CurrentApplication)).ToList();
+
+        var defaultDept = await _storedProcService.GetDepartmentForStaffAsync(NetId, CurrentApplication);
+        if (defaultDept != null)
+            DepartmentId = defaultDept.DeptId;
 
         return Page();
     }
@@ -55,6 +64,7 @@ public class CheckInModel : PageModel
         CurrentApplication = _appContextService.GetCurrentApplication();
 
         ShiftCategories = await _storedProcService.GetShiftCategoriesAsync(CurrentApplication);
+        Departments = (await _storedProcService.GetDepartmentsAsync(CurrentApplication)).ToList();
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         var hostname = await ResolveHostnameAsync(ip);
@@ -64,7 +74,7 @@ public class CheckInModel : PageModel
             hostname,
             ip,
             CurrentApplication,
-            null,
+            DepartmentId,
             ShiftCategoryId);
 
         if (result.Success)

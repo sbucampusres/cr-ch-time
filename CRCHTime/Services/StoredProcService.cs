@@ -44,11 +44,11 @@ public class StoredProcService : IStoredProcService
             await connection.OpenAsync();
 
             using var command = connection.CreateCommand();
-            command.CommandText = "WS_CR_CARDSWIPE.CRFCCS_GET_STAFF";
+            command.CommandText = "WS_CR_CH.CRCH_GET_STAFF";
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application ?? (object)DBNull.Value;
-            command.Parameters.Add("cv_results", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+            command.Parameters.Add("r_cursor", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -72,7 +72,7 @@ public class StoredProcService : IStoredProcService
             await connection.OpenAsync();
 
             using var command = connection.CreateCommand();
-            command.CommandText = "WS_CR_CARDSWIPE.CRFCCS_ADD_UPDATE_STAFF";
+            command.CommandText = "WS_CR_CH.CRCH_ADD_UPDATE_STAFF";
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add("p_netid", OracleDbType.Varchar2).Value = staff.NetId;
@@ -496,7 +496,9 @@ public class StoredProcService : IStoredProcService
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                var deptId = reader.GetInt32(0); // Returns just DEPT_ID
+                var raw = reader.GetValue(0);
+                if (raw == DBNull.Value || !int.TryParse(raw.ToString(), out var deptId))
+                    return null;
                 // Now get full department details from all departments
                 var allDepts = await GetDepartmentsAsync(application);
                 return allDepts.FirstOrDefault(d => d.DeptId == deptId);
@@ -779,11 +781,11 @@ public class StoredProcService : IStoredProcService
             {
                 categories.Add(new ShiftCategory
                 {
-                    Id          = reader.GetInt32(reader.GetOrdinal("ID")),
+                    Id          = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("ID"))),
                     Name        = reader.GetString(reader.GetOrdinal("NAME")),
                     Description = reader.IsDBNull(reader.GetOrdinal("DESCRIPTION")) ? null : reader.GetString(reader.GetOrdinal("DESCRIPTION")),
                     Application = reader.GetString(reader.GetOrdinal("APPLICATION")),
-                    IsActive    = reader.GetInt32(reader.GetOrdinal("IS_ACTIVE")) == 1
+                    IsActive    = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("IS_ACTIVE"))) == 1
                 });
             }
             return categories;
@@ -1041,12 +1043,12 @@ public class StoredProcService : IStoredProcService
             await connection.OpenAsync();
 
             using var command = connection.CreateCommand();
-            command.CommandText = "WS_CR_CARDSWIPE.CRFCCS_GET_USER_ROLES";
+            command.CommandText = "WS_CR_CH.CRCH_GET_USER_ROLES";
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.Add("p_netid", OracleDbType.Varchar2).Value = netId;
             command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application ?? (object)DBNull.Value;
-            command.Parameters.Add("cv_results", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+            command.Parameters.Add("r_cursor", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -1199,7 +1201,7 @@ public class StoredProcService : IStoredProcService
             {
                 results.Add(new VisitsByHostEntry(
                     reader.GetString(reader.GetOrdinal("HOSTNAME")),
-                    reader.GetInt32(reader.GetOrdinal("VISIT_COUNT"))
+                    Convert.ToInt32(reader.GetValue(reader.GetOrdinal("VISIT_COUNT")))
                 ));
             }
         }
@@ -1233,7 +1235,7 @@ public class StoredProcService : IStoredProcService
             {
                 results.Add(new DailyVisitEntry(
                     reader.GetDateTime(reader.GetOrdinal("VISIT_DATE")),
-                    reader.GetInt32(reader.GetOrdinal("VISIT_COUNT"))
+                    Convert.ToInt32(reader.GetValue(reader.GetOrdinal("VISIT_COUNT")))
                 ));
             }
         }
@@ -1250,12 +1252,15 @@ public class StoredProcService : IStoredProcService
 
     private static Staff MapStaffFromReader(IDataReader reader)
     {
-        // CRFCCS_GET_STAFF only returns: NETID, TERMINATIONDATE
         return new Staff
         {
             NetId = reader.GetString(reader.GetOrdinal("NETID")),
             TerminationDate = reader.IsDBNull(reader.GetOrdinal("TERMINATIONDATE"))
-                ? null : reader.GetDateTime(reader.GetOrdinal("TERMINATIONDATE"))
+                ? null : reader.GetDateTime(reader.GetOrdinal("TERMINATIONDATE")),
+            Role = reader.IsDBNull(reader.GetOrdinal("ROLE"))
+                ? null : reader.GetString(reader.GetOrdinal("ROLE")),
+            DeptId = reader.IsDBNull(reader.GetOrdinal("DEPT_ID"))
+                ? null : reader.GetValue(reader.GetOrdinal("DEPT_ID"))?.ToString()
         };
     }
 
@@ -1303,7 +1308,7 @@ public class StoredProcService : IStoredProcService
     {
         return new SwipeEntry
         {
-            Id = reader.GetInt32(reader.GetOrdinal("ID")),
+            Id = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("ID"))),
             SBUID = reader.GetString(reader.GetOrdinal("SBUID")),
             SwipeTimeIn = reader.GetDateTime(reader.GetOrdinal("SWIPE_TIME_IN")),
             SwipeTimeOut = reader.IsDBNull(reader.GetOrdinal("SWIPE_TIME_OUT"))
@@ -1333,7 +1338,7 @@ public class StoredProcService : IStoredProcService
     {
         return new TimesheetEntry
         {
-            Id = reader.GetInt32(reader.GetOrdinal("ID")),
+            Id = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("ID"))),
             NetId = reader.GetString(reader.GetOrdinal("NETID")),
             CheckinTimestamp = reader.GetDateTime(reader.GetOrdinal("CHECKIN_TIMESTAMP")),
             CheckinHostname = reader.IsDBNull(reader.GetOrdinal("CHECKIN_HOSTNAME"))
@@ -1349,9 +1354,9 @@ public class StoredProcService : IStoredProcService
             Application = reader.IsDBNull(reader.GetOrdinal("APPLICATION"))
                 ? null : reader.GetString(reader.GetOrdinal("APPLICATION")),
             DepartmentId = reader.IsDBNull(reader.GetOrdinal("DEPARTMENT_ID"))
-                ? null : reader.GetInt32(reader.GetOrdinal("DEPARTMENT_ID")),
+                ? null : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("DEPARTMENT_ID"))),
             ShiftCategoryId = reader.IsDBNull(reader.GetOrdinal("SHIFT_CATEGORY_ID"))
-                ? null : reader.GetInt32(reader.GetOrdinal("SHIFT_CATEGORY_ID")),
+                ? null : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("SHIFT_CATEGORY_ID"))),
             ShiftCategoryName = reader.IsDBNull(reader.GetOrdinal("SHIFT_CATEGORY_NAME"))
                 ? null : reader.GetString(reader.GetOrdinal("SHIFT_CATEGORY_NAME"))
         };
@@ -1361,12 +1366,12 @@ public class StoredProcService : IStoredProcService
     {
         return new Building
         {
-            BuildingId = reader.GetInt32(reader.GetOrdinal("BUILDING_ID")),
+            BuildingId = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("BUILDING_ID"))),
             Name = reader.GetString(reader.GetOrdinal("NAME")),
             Application = reader.IsDBNull(reader.GetOrdinal("APPLICATION"))
                 ? null : reader.GetString(reader.GetOrdinal("APPLICATION")),
             Inactive = reader.IsDBNull(reader.GetOrdinal("INACTIVE"))
-                ? false : reader.GetInt32(reader.GetOrdinal("INACTIVE")) == 1
+                ? false : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("INACTIVE"))) == 1
         };
     }
 
@@ -1374,12 +1379,12 @@ public class StoredProcService : IStoredProcService
     {
         return new Department
         {
-            DeptId = reader.GetInt32(reader.GetOrdinal("DEPT_ID")),
+            DeptId = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("DEPT_ID"))),
             Name = reader.GetString(reader.GetOrdinal("NAME")),
             Application = reader.IsDBNull(reader.GetOrdinal("APPLICATION"))
                 ? null : reader.GetString(reader.GetOrdinal("APPLICATION")),
             Inactive = reader.IsDBNull(reader.GetOrdinal("INACTIVE"))
-                ? false : reader.GetInt32(reader.GetOrdinal("INACTIVE")) == 1
+                ? false : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("INACTIVE"))) == 1
         };
     }
 
@@ -1387,7 +1392,7 @@ public class StoredProcService : IStoredProcService
     {
         return new Company
         {
-            CompanyId = reader.GetInt32(reader.GetOrdinal("COMPANY_ID")),
+            CompanyId = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("COMPANY_ID"))),
             Name = reader.GetString(reader.GetOrdinal("NAME")),
             Application = reader.IsDBNull(reader.GetOrdinal("APPLICATION"))
                 ? null : reader.GetString(reader.GetOrdinal("APPLICATION"))
@@ -1406,6 +1411,125 @@ public class StoredProcService : IStoredProcService
             LastName = reader.IsDBNull(reader.GetOrdinal("LASTNAME"))
                 ? null : reader.GetString(reader.GetOrdinal("LASTNAME"))
         };
+    }
+
+    private static Allotment MapAllotmentFromReader(IDataReader reader)
+    {
+        return new Allotment
+        {
+            Id          = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("ID"))),
+            DeptId      = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("DEPT_ID"))),
+            CategoryId  = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("CATEGORY_ID"))),
+            Year        = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("YEAR"))),
+            Hours       = reader.IsDBNull(reader.GetOrdinal("HOURS"))
+                            ? null : (decimal?)Convert.ToDecimal(reader.GetValue(reader.GetOrdinal("HOURS"))),
+            Application = reader.GetString(reader.GetOrdinal("APPLICATION")),
+        };
+    }
+
+    #endregion
+
+    #region Allotments
+
+    public async Task<IEnumerable<Allotment>> GetAllotmentsAsync(string application, int year)
+    {
+        var results = new List<Allotment>();
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_GET_ALLOTMENTS";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application;
+            command.Parameters.Add("p_year",        OracleDbType.Int32).Value    = year;
+            command.Parameters.Add("r_cursor",      OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                results.Add(MapAllotmentFromReader(reader));
+
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting allotments for {Application} {Year}", application, year);
+            return Enumerable.Empty<Allotment>();
+        }
+    }
+
+    public async Task<OperationResult> UpsertAllotmentAsync(
+        string application, int year, int deptId, int categoryId, decimal? hours, string modifiedBy)
+    {
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_UPSERT_ALLOTMENT";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application;
+            command.Parameters.Add("p_year",        OracleDbType.Int32).Value    = year;
+            command.Parameters.Add("p_dept_id",     OracleDbType.Int32).Value    = deptId;
+            command.Parameters.Add("p_category_id", OracleDbType.Int32).Value    = categoryId;
+            command.Parameters.Add("p_hours",       OracleDbType.Decimal).Value  =
+                hours.HasValue ? (object)hours.Value : DBNull.Value;
+            command.Parameters.Add("p_user",        OracleDbType.Varchar2).Value = modifiedBy;
+
+            var errorParam = command.Parameters.Add("r_error", OracleDbType.Varchar2, 500);
+            errorParam.Direction = ParameterDirection.Output;
+
+            await command.ExecuteNonQueryAsync();
+
+            var error = errorParam.Value is OracleString os && !os.IsNull ? os.Value : null;
+            return error is null
+                ? OperationResult.Succeeded()
+                : OperationResult.Failed(error);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error upserting allotment {DeptId}/{CategoryId}/{Year}", deptId, categoryId, year);
+            return OperationResult.Failed("Database error saving allotment.");
+        }
+    }
+
+    public async Task<IEnumerable<(int DeptId, int CategoryId, double HoursUsed)>> GetHoursUsedAsync(
+        string application, int year)
+    {
+        var results = new List<(int, int, double)>();
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_GET_HOURS_USED";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_application", OracleDbType.Varchar2).Value = application;
+            command.Parameters.Add("p_year",        OracleDbType.Int32).Value    = year;
+            command.Parameters.Add("r_cursor",      OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var deptId     = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("DEPARTMENT_ID")));
+                var categoryId = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("SHIFT_CATEGORY_ID")));
+                var rawHours   = (Oracle.ManagedDataAccess.Types.OracleDecimal)reader.GetProviderSpecificValue(reader.GetOrdinal("HOURS_USED"));
+                var hoursUsed  = rawHours.ToDouble();
+                results.Add((deptId, categoryId, hoursUsed));
+            }
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting hours used for {Application} {Year}", application, year);
+            return Enumerable.Empty<(int, int, double)>();
+        }
     }
 
     #endregion

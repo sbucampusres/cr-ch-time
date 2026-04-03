@@ -199,6 +199,88 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
     END CRCH_DEACTIVATE_DEPARTMENT;
 
     -- --------------------------------------------------------
+    -- CRCH_GET_STAFF
+    -- Returns all staff for an application including ROLE and
+    -- DEPT_ID. Replaces CRFCCS_GET_STAFF which only returned
+    -- NETID and TERMINATIONDATE.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_GET_STAFF(
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN r_cursor FOR
+            SELECT NETID, TERMINATIONDATE, ROLE, DEPT_ID
+            FROM   WS_FCSTAFF
+            WHERE  APPLICATION = p_application
+            ORDER BY TERMINATIONDATE;
+    END CRCH_GET_STAFF;
+
+    -- --------------------------------------------------------
+    -- CRCH_ADD_UPDATE_STAFF
+    -- Inserts or fully updates a staff row including ROLE and
+    -- DEPT_ID. Replaces CRFCCS_ADD_UPDATE_STAFF whose UPDATE
+    -- statement omitted those two columns.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_ADD_UPDATE_STAFF(
+        p_netid             IN  VARCHAR2,
+        p_hostname          IN  VARCHAR2,
+        p_terminationdate   IN  DATE,
+        p_application       IN  VARCHAR2,
+        p_role              IN  VARCHAR2,
+        p_department        IN  VARCHAR2
+    ) IS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(1) INTO v_count
+        FROM   WS_FCSTAFF
+        WHERE  NETID        = LOWER(p_netid)
+        AND    APPLICATION  = p_application;
+
+        IF v_count > 0 THEN
+            UPDATE WS_FCSTAFF
+            SET    AUDIT_TIMESTAMP  = CURRENT_TIMESTAMP,
+                   HOSTNAME         = p_hostname,
+                   TERMINATIONDATE  = p_terminationdate,
+                   ROLE             = p_role,
+                   DEPT_ID          = p_department
+            WHERE  NETID        = LOWER(p_netid)
+            AND    APPLICATION  = p_application;
+        ELSE
+            INSERT INTO WS_FCSTAFF
+                (NETID, AUDIT_TIMESTAMP, HOSTNAME, TERMINATIONDATE, APPLICATION, ROLE, DEPT_ID)
+            VALUES
+                (LOWER(p_netid), CURRENT_TIMESTAMP, p_hostname, p_terminationdate, p_application, p_role, p_department);
+        END IF;
+
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            RAISE;
+    END CRCH_ADD_UPDATE_STAFF;
+
+    -- --------------------------------------------------------
+    -- CRCH_GET_USER_ROLES
+    -- Returns the role for a staff member. Unlike the original
+    -- CRFCCS_GET_USER_ROLES, this handles NULL TERMINATIONDATE
+    -- correctly so active staff with no end date are included.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_GET_USER_ROLES(
+        p_netid         IN  VARCHAR2,
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN r_cursor FOR
+            SELECT ROLE
+            FROM   WS_FCSTAFF
+            WHERE  APPLICATION  = p_application
+            AND    NETID        = LOWER(p_netid)
+            AND    (TERMINATIONDATE IS NULL OR TERMINATIONDATE >= CURRENT_TIMESTAMP);
+    END CRCH_GET_USER_ROLES;
+
+    -- --------------------------------------------------------
     -- CRCH_STAFF_CHECKIN
     -- Updated check-in that stores the shift category.
     -- Validates: not already checked in, not terminated.
@@ -299,5 +381,92 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
             AND     (p_application IS NULL OR w.APPLICATION   = p_application)
             ORDER BY w.CHECKIN_TIMESTAMP DESC;
     END CRCH_GET_TIMECARD;
+
+    -- --------------------------------------------------------
+    -- CRCH_GET_ALLOTMENTS
+    -- Returns all allotment rows for an application + year.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_GET_ALLOTMENTS(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
+        r_cursor        OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN r_cursor FOR
+            SELECT  ID, DEPT_ID, CATEGORY_ID, YEAR, HOURS, APPLICATION,
+                    CREATED_AT, CREATED_BY, MODIFIED_AT, MODIFIED_BY
+            FROM    WS_CR_CS_ALLOTMENTS
+            WHERE   APPLICATION = p_application
+            AND     YEAR        = p_year
+            ORDER BY DEPT_ID, CATEGORY_ID;
+    END CRCH_GET_ALLOTMENTS;
+
+    -- --------------------------------------------------------
+    -- CRCH_UPSERT_ALLOTMENT
+    -- Inserts or updates a single dept+category+year cell.
+    -- Passing NULL for p_hours stores NULL (no allotment).
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_UPSERT_ALLOTMENT(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
+        p_dept_id       IN  NUMBER,
+        p_category_id   IN  NUMBER,
+        p_hours         IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    ) IS
+    BEGIN
+        r_error := NULL;
+
+        MERGE INTO WS_CR_CS_ALLOTMENTS a
+        USING DUAL
+        ON (    a.DEPT_ID     = p_dept_id
+            AND a.CATEGORY_ID = p_category_id
+            AND a.YEAR        = p_year
+            AND a.APPLICATION = p_application)
+        WHEN MATCHED THEN
+            UPDATE SET
+                HOURS       = p_hours,
+                MODIFIED_AT = SYSTIMESTAMP,
+                MODIFIED_BY = p_user
+        WHEN NOT MATCHED THEN
+            INSERT (DEPT_ID, CATEGORY_ID, YEAR, HOURS, APPLICATION, CREATED_AT, CREATED_BY)
+            VALUES (p_dept_id, p_category_id, p_year, p_hours, p_application, SYSTIMESTAMP, p_user);
+
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            r_error := 'Error saving allotment: ' || SQLERRM;
+    END CRCH_UPSERT_ALLOTMENT;
+
+    -- --------------------------------------------------------
+    -- CRCH_GET_HOURS_USED
+    -- Sums completed shift hours from WS_FCSTAFFWORKLOG,
+    -- grouped by department + shift category for a given year.
+    -- Only includes rows where CHECKOUT_TIMESTAMP IS NOT NULL.
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_GET_HOURS_USED(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
+        r_cursor        OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN r_cursor FOR
+            SELECT
+                w.DEPARTMENT_ID,
+                w.SHIFT_CATEGORY_ID,
+                SUM(
+                    (CAST(w.CHECKOUT_TIMESTAMP AS DATE) - CAST(w.CHECKIN_TIMESTAMP AS DATE)) * 24
+                ) AS HOURS_USED
+            FROM  WS_FCSTAFFWORKLOG w
+            WHERE w.APPLICATION        = p_application
+            AND   EXTRACT(YEAR FROM w.CHECKIN_TIMESTAMP) = p_year
+            AND   w.CHECKOUT_TIMESTAMP IS NOT NULL
+            AND   w.DEPARTMENT_ID      IS NOT NULL
+            AND   w.SHIFT_CATEGORY_ID  IS NOT NULL
+            GROUP BY w.DEPARTMENT_ID, w.SHIFT_CATEGORY_ID
+            ORDER BY w.DEPARTMENT_ID, w.SHIFT_CATEGORY_ID;
+    END CRCH_GET_HOURS_USED;
 
 END WS_CR_CH;

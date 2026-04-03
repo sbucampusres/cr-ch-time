@@ -1,0 +1,102 @@
+@page
+@model CRCHTime.Pages.Admin.AllotmentsReportModel
+@{
+    ViewData["Title"] = $"Allotments Report — {Model.Year}";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-chart-bar icon-primary"></i> ALLOTMENTS REPORT</h1>
+        <p class="text-muted">Application: <strong>@Model.CurrentApplication</strong></p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label for="yearInput" class="form-label mb-0">Year</label>
+                <input id="yearInput" type="number" name="Year" value="@Model.Year"
+                       min="2020" max="2099" class="form-control" style="width: 100px" />
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right"></i> Load
+                </button>
+            </div>
+            <div class="col-auto ms-auto d-flex align-items-end">
+                <a asp-page="ManageAllotments" asp-route-Year="@Model.Year" class="btn btn-outline-secondary">
+                    <i class="fas fa-sliders-h"></i> Edit Allotments
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Departments.Any() || !Model.Categories.Any())
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> No departments or shift categories found.
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-table"></i> Hours Used vs. Allotted — @Model.Year</h5>
+            <div class="d-flex gap-3 small">
+                <span class="text-success"><i class="fas fa-circle"></i> Under 75%</span>
+                <span class="text-warning fw-semibold"><i class="fas fa-circle"></i> 75–99%</span>
+                <span class="text-danger fw-bold"><i class="fas fa-circle"></i> At / Over</span>
+                <span class="text-muted"><i class="fas fa-circle"></i> No allotment</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0 align-middle">
+                    <caption class="visually-hidden">
+                        Hours used versus allotted for @Model.Year — rows are departments, columns are shift categories.
+                        Each cell shows hours used / hours allotted.
+                    </caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-3">Department</th>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <th scope="col" class="text-center">@cat.Name</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dept in Model.Departments)
+                        {
+                            <tr>
+                                <th scope="row" class="ps-3 fw-normal">@dept.Name</th>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    var allotted  = Model.GetAllotted(dept.DeptId, cat.Id);
+                                    var used      = Model.GetUsed(dept.DeptId, cat.Id);
+                                    var cellClass = Model.GetCellClass(dept.DeptId, cat.Id);
+                                    var status    = Model.GetCellStatus(dept.DeptId, cat.Id);
+                                    <td class="text-center @cellClass">
+                                        @if (allotted is null)
+                                        {
+                                            <span aria-label="@dept.Name @cat.Name: no allotment set">—</span>
+                                        }
+                                        else
+                                        {
+                                            <span aria-label="@dept.Name @cat.Name: @AllotmentsReportModel.FormatHours(used) used of @allotted?.ToString("0.##")h allotted, @status">
+                                                @AllotmentsReportModel.FormatHours(used)
+                                                <span class="text-muted fw-normal">/ @allotted?.ToString("0.##")h</span>
+                                            </span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
