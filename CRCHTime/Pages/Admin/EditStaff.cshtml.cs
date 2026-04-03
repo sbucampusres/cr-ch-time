@@ -17,82 +17,90 @@ public class EditStaffModel : PageModel
         IStoredProcService storedProcService,
         IApplicationContextService appContextService,
         ILogger<EditStaffModel> logger)
-    {
-        _storedProcService = storedProcService;
-        _appContextService = appContextService;
-        _logger = logger;
-    }
+      {
+         _storedProcService = storedProcService;
+         _appContextService = appContextService;
+         _logger = logger;
+      }
 
     public string CurrentApplication { get; set; } = string.Empty;
 
-    [BindProperty(SupportsGet = true)]
+     [BindProperty(SupportsGet = true)]
     public string NetId { get; set; } = string.Empty;
 
-    [BindProperty]
+     [BindProperty]
     public string? Role { get; set; }
 
-    [BindProperty]
+     [BindProperty]
     public DateTime? TerminationDate { get; set; }
 
-    [TempData]
+     [BindProperty]
+    public int? DeptId { get; set; }
+
+    public IList<Models.Entities.Department> Departments { get; set; } = [];
+
+     [TempData]
     public string? StatusMessage { get; set; }
 
-    [TempData]
+     [TempData]
     public bool IsSuccess { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
-    {
+     {
         if (string.IsNullOrWhiteSpace(NetId))
             return RedirectToPage("ManageStaff");
 
         CurrentApplication = _appContextService.GetCurrentApplication();
 
-        // Pre-populate termination date from staff list
         var allStaff = await _storedProcService.GetAllStaffAsync(CurrentApplication);
         var staffMember = allStaff.FirstOrDefault(s =>
             string.Equals(s.NetId, NetId, StringComparison.OrdinalIgnoreCase));
         if (staffMember != null)
+        {
             TerminationDate = staffMember.TerminationDate;
+            Role = staffMember.Role;
+            if (int.TryParse(staffMember.DeptId, out int deptId))
+                DeptId = deptId;
+        }
 
-        // Pre-populate role (only returned for non-terminated staff by the procedure)
-        var currentRoles = await _storedProcService.GetUserRolesAsync(NetId, CurrentApplication);
-        Role = currentRoles.FirstOrDefault();
+        Departments = (await _storedProcService.GetAllDepartmentsAdminAsync(CurrentApplication)).ToList();
 
         return Page();
-    }
+     }
 
     public async Task<IActionResult> OnPostAsync()
-    {
+     {
         if (string.IsNullOrWhiteSpace(NetId))
             return RedirectToPage("ManageStaff");
 
         CurrentApplication = _appContextService.GetCurrentApplication();
 
         var staff = new StaffRecord
-        {
+          {
             NetId = NetId.Trim().ToLower(),
             Application = CurrentApplication,
             Role = Role,
             TerminationDate = TerminationDate,
+            DeptId = DeptId?.ToString(),
             Hostname = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown"
-        };
+          };
 
         var success = await _storedProcService.AddUpdateStaffAsync(staff);
 
         if (success)
-        {
+          {
             StatusMessage = $"{NetId} has been updated.";
             IsSuccess = true;
-            _logger.LogInformation("Staff {NetId} updated by {Admin} in application {Application}",
+             _logger.LogInformation("Staff {NetId} updated by {Admin} in application {Application}",
                 NetId, User.Identity?.Name, CurrentApplication);
-        }
+          }
         else
-        {
+          {
             StatusMessage = $"Failed to update {NetId}. Please try again.";
             IsSuccess = false;
-            _logger.LogWarning("Failed to update staff {NetId} by {Admin}", NetId, User.Identity?.Name);
-        }
+             _logger.LogWarning("Failed to update staff {NetId} by {Admin}", NetId, User.Identity?.Name);
+          }
 
         return RedirectToPage("ManageStaff");
-    }
+     }
 }

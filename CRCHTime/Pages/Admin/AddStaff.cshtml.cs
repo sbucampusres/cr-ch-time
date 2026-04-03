@@ -19,12 +19,12 @@ public class AddStaffModel : PageModel
         IApplicationContextService appContextService,
         UserLookupService userLookupService,
         ILogger<AddStaffModel> logger)
-    {
-        _storedProcService = storedProcService;
-        _appContextService = appContextService;
-        _userLookupService = userLookupService;
-        _logger = logger;
-    }
+     {
+         _storedProcService = storedProcService;
+         _appContextService = appContextService;
+         _userLookupService = userLookupService;
+         _logger = logger;
+     }
 
     public string CurrentApplication { get; set; } = string.Empty;
 
@@ -37,6 +37,11 @@ public class AddStaffModel : PageModel
     [BindProperty]
     public DateTime? TerminationDate { get; set; }
 
+    [BindProperty]
+    public int? DeptId { get; set; }
+
+    public IList<Models.Entities.Department> Departments { get; set; } = [];
+
     [TempData]
     public string? StatusMessage { get; set; }
 
@@ -46,6 +51,7 @@ public class AddStaffModel : PageModel
     public async Task<IActionResult> OnGetAsync()
     {
         CurrentApplication = _appContextService.GetCurrentApplication();
+        Departments = (await _storedProcService.GetAllDepartmentsAdminAsync(CurrentApplication)).ToList();
         return Page();
     }
 
@@ -78,6 +84,7 @@ public class AddStaffModel : PageModel
             Application = CurrentApplication,
             Role = Role,
             TerminationDate = TerminationDate,
+            DeptId = DeptId?.ToString(),
             Hostname = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown"
         };
 

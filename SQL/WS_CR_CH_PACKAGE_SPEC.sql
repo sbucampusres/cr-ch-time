@@ -58,6 +58,33 @@ CREATE OR REPLACE PACKAGE WS_CR_CH AS
     );
 
     -- --------------------------------------------------------
+    -- Staff management
+    -- Replaces WS_CR_CARDSWIPE.CRFCCS_GET_STAFF,
+    --          WS_CR_CARDSWIPE.CRFCCS_ADD_UPDATE_STAFF,
+    --          WS_CR_CARDSWIPE.CRFCCS_GET_USER_ROLES
+    -- --------------------------------------------------------
+
+    PROCEDURE CRCH_GET_STAFF(
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE CRCH_ADD_UPDATE_STAFF(
+        p_netid             IN  VARCHAR2,
+        p_hostname          IN  VARCHAR2,
+        p_terminationdate   IN  DATE,
+        p_application       IN  VARCHAR2,
+        p_role              IN  VARCHAR2,
+        p_department        IN  VARCHAR2
+    );
+
+    PROCEDURE CRCH_GET_USER_ROLES(
+        p_netid         IN  VARCHAR2,
+        p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    );
+
+    -- --------------------------------------------------------
     -- Updated Staff Check-In (adds p_shift_category_id)
     -- Replaces WS_CR_CARDSWIPE.CRFCCS_STAFF_CHECKIN
     -- --------------------------------------------------------
@@ -83,6 +110,32 @@ CREATE OR REPLACE PACKAGE WS_CR_CH AS
         p_netid         IN  VARCHAR2,
         p_department    IN  VARCHAR2,
         p_application   IN  VARCHAR2,
+        r_cursor        OUT SYS_REFCURSOR
+    );
+
+    -- --------------------------------------------------------
+    -- Annual allotment management
+    -- --------------------------------------------------------
+
+    PROCEDURE CRCH_GET_ALLOTMENTS(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
+        r_cursor        OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE CRCH_UPSERT_ALLOTMENT(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
+        p_dept_id       IN  NUMBER,
+        p_category_id   IN  NUMBER,
+        p_hours         IN  NUMBER,
+        p_user          IN  VARCHAR2,
+        r_error         OUT VARCHAR2
+    );
+
+    PROCEDURE CRCH_GET_HOURS_USED(
+        p_application   IN  VARCHAR2,
+        p_year          IN  NUMBER,
         r_cursor        OUT SYS_REFCURSOR
     );
 

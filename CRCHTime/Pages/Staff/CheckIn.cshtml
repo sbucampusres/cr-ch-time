@@ -34,6 +34,16 @@
                     <p class="text-muted">@DateTime.Now.ToString("dddd, MMMM d, yyyy")</p>
                 </div>
                     <form method="post">
+                        @if (Model.Departments.Any())
+                        {
+                            <div class="mb-4">
+                                <label asp-for="DepartmentId" class="form-label">Department</label>
+                                <select asp-for="DepartmentId" class="form-select form-select-lg"
+                                        asp-items="@(new SelectList(Model.Departments, "DeptId", "Name"))">
+                                    <option value="">-- Select Department --</option>
+                                </select>
+                            </div>
+                        }
                         @if (Model.ShiftCategories.Any())
                         {
                             <div class="mb-4">

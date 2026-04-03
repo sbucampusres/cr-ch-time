@@ -47,10 +47,8 @@ public class ManageStaffModel : PageModel
 
         var lookupTasks = rawStaff.Select(async s =>
         {
-            var lookupTask = _userLookupService.LookupUserByNetIdAsync(s.NetId);
-            var rolesTask  = _storedProcService.GetUserRolesAsync(s.NetId, CurrentApplication);
-            await Task.WhenAll(lookupTask, rolesTask);
-            return new StaffDisplayItem(s, lookupTask.Result?.NAME, rolesTask.Result.FirstOrDefault());
+            var lookup = await _userLookupService.LookupUserByNetIdAsync(s.NetId);
+            return new StaffDisplayItem(s, lookup?.NAME, s.Role);
         });
 
         StaffList = await Task.WhenAll(lookupTasks);
