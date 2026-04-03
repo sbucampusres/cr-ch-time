@@ -6,7 +6,7 @@ using CRCHTime.Services;
 
 namespace CRCHTime.Pages.Admin;
 
-[Authorize(Policy = "RequireAdministrator")]
+[Authorize(Policy = "RequireSupervisor")]
 public class AllotmentsReportModel : PageModel
 {
     private readonly IStoredProcService _storedProcService;

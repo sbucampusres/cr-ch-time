@@ -1355,6 +1355,8 @@ public class StoredProcService : IStoredProcService
                 ? null : reader.GetString(reader.GetOrdinal("APPLICATION")),
             DepartmentId = reader.IsDBNull(reader.GetOrdinal("DEPARTMENT_ID"))
                 ? null : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("DEPARTMENT_ID"))),
+            DepartmentName = reader.IsDBNull(reader.GetOrdinal("DEPARTMENT_NAME"))
+                ? null : reader.GetString(reader.GetOrdinal("DEPARTMENT_NAME")),
             ShiftCategoryId = reader.IsDBNull(reader.GetOrdinal("SHIFT_CATEGORY_ID"))
                 ? null : Convert.ToInt32(reader.GetValue(reader.GetOrdinal("SHIFT_CATEGORY_ID"))),
             ShiftCategoryName = reader.IsDBNull(reader.GetOrdinal("SHIFT_CATEGORY_NAME"))

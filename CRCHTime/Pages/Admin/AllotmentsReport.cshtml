@@ -36,7 +36,7 @@
 @if (!Model.Departments.Any() || !Model.Categories.Any())
 {
     <div class="alert alert-warning">
-        <i class="fas fa-exclamation-triangle"></i> No departments or shift categories found.
+        <i class="fas fa-exclamation-triangle"></i> No locations or shift categories found.
     </div>
 }
 else
@@ -55,12 +55,12 @@ else
             <div class="table-responsive">
                 <table class="table table-bordered table-sm mb-0 align-middle">
                     <caption class="visually-hidden">
-                        Hours used versus allotted for @Model.Year — rows are departments, columns are shift categories.
+                        Hours used versus allotted for @Model.Year — rows are locations, columns are shift categories.
                         Each cell shows hours used / hours allotted.
                     </caption>
                     <thead class="table-light">
                         <tr>
-                            <th scope="col" class="ps-3">Department</th>
+                            <th scope="col" class="ps-3">Location</th>
                             @foreach (var cat in Model.Categories)
                             {
                                 <th scope="col" class="text-center">@cat.Name</th>

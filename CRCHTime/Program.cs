@@ -48,10 +48,12 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdministrator", policy =>
         policy.RequireRole("Administrator"));
+    options.AddPolicy("RequireSupervisor", policy =>
+        policy.RequireRole("Administrator", "Supervisor"));
     options.AddPolicy("RequireOperator", policy =>
-        policy.RequireRole("Administrator", "Operator"));
+        policy.RequireRole("Administrator", "Supervisor", "Operator"));
     options.AddPolicy("RequireViewer", policy =>
-        policy.RequireRole("Administrator", "Operator", "Viewer"));
+        policy.RequireRole("Administrator", "Supervisor", "Operator", "Viewer"));
 });
 
 builder.Services.AddRazorPages();

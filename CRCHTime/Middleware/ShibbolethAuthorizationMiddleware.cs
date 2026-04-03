@@ -152,13 +152,16 @@ public class ShibbolethAuthorizationMiddleware
     {
         return role?.ToLower() switch
         {
-            "chadmin" => "Administrator",
-            "chuser" => "Operator",
+            "chadmin"       => "Administrator",
+            "chsupervisor"  => "Supervisor",
+            "chuser"        => "Operator",
             "administrator" => "Administrator",
-            "admin" => "Administrator",
-            "operator" => "Operator",
-            "viewer" => "Viewer",
-            _ => "Operator"  // Default for null or unknown roles
+            "admin"         => "Administrator",
+            "supervisor"    => "Supervisor",
+            "operator"      => "Operator",
+            "user"          => "Operator",
+            "viewer"        => "Viewer",
+            _               => "Operator"  // Default for null or unknown roles
         };
     }
 }

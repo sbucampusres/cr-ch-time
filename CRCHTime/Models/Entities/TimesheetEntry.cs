@@ -60,7 +60,10 @@ public class TimesheetEntry
     [Display(Name = "Shift Category")]
     public int? ShiftCategoryId { get; set; }
 
-    // Populated by CRCH_GET_TIMECARD join — not a mapped column
+    // Populated by CRCH_GET_TIMECARD join — not mapped columns
+    [NotMapped]
+    public string? DepartmentName { get; set; }
+
     [NotMapped]
     public string? ShiftCategoryName { get; set; }
 

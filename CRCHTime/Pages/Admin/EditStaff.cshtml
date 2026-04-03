@@ -44,14 +44,15 @@
 								<select asp-for="Role" id="Role" class="form-select">
 									<option value="">-- Select Role --</option>
 									<option value="chadmin">Administrator</option>
+									<option value="chsupervisor">Supervisor</option>
 									<option value="chuser">Staff</option>
 								</select>
 							</div>
 
 							<div class="mb-3">
-								<label for="DeptId" class="form-label">Department</label>
+								<label for="DeptId" class="form-label">Location</label>
 								<select asp-for="DeptId" id="DeptId" class="form-select">
-									<option value="">-- Select Department --</option>
+									<option value="">-- Select Location --</option>
 									@foreach (var dept in Model.Departments)
 									{
 										<option value="@dept.DeptId">@dept.Name</option>

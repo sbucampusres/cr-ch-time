@@ -10,6 +10,10 @@
             {
                 <span class="badge bg-danger ms-1">Admin</span>
             }
+            else if (User.IsInRole("Supervisor"))
+            {
+                <span class="badge bg-primary ms-1">Supervisor</span>
+            }
             else if (User.IsInRole("Operator"))
             {
                 <span class="badge bg-warning ms-1">Operator</span>

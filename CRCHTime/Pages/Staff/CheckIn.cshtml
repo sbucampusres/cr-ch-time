@@ -37,10 +37,10 @@
                         @if (Model.Departments.Any())
                         {
                             <div class="mb-4">
-                                <label asp-for="DepartmentId" class="form-label">Department</label>
+                                <label asp-for="DepartmentId" class="form-label">Location</label>
                                 <select asp-for="DepartmentId" class="form-select form-select-lg"
                                         asp-items="@(new SelectList(Model.Departments, "DeptId", "Name"))">
-                                    <option value="">-- Select Department --</option>
+                                    <option value="">-- Select Location --</option>
                                 </select>
                             </div>
                         }

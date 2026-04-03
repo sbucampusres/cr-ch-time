@@ -56,6 +56,8 @@
                             <th scope="col">Check-In</th>
                             <th scope="col">Check-Out</th>
                             <th scope="col">Duration</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Category</th>
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
@@ -67,6 +69,8 @@
                                 <td>@entry.CheckinTimestamp.ToString("h:mm tt")</td>
                                 <td>@(entry.CheckoutTimestamp?.ToString("h:mm tt") ?? "-")</td>
                                 <td>@entry.DurationDisplay</td>
+                                <td>@(entry.DepartmentName ?? "—")</td>
+                                <td>@(entry.ShiftCategoryName ?? "—")</td>
                                 <td>
                                     @if (entry.IsCheckedIn)
                                     {

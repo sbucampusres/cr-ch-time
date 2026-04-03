@@ -14,7 +14,21 @@ public class ManageStaffModel : PageModel
     private readonly UserLookupService _userLookupService;
     private readonly ILogger<ManageStaffModel> _logger;
 
-    public record StaffDisplayItem(StaffRecord Staff, string? DisplayName, string? Role);
+    public record StaffDisplayItem(StaffRecord Staff, string? DisplayName, string? Role)
+    {
+        public string RoleDisplay => Role?.ToLower() switch
+        {
+            "chadmin"       => "Administrator",
+            "chsupervisor"  => "Supervisor",
+            "chuser"        => "Staff",
+            "administrator" => "Administrator",
+            "admin"         => "Administrator",
+            "supervisor"    => "Supervisor",
+            "operator"      => "Staff",
+            "user"          => "Staff",
+            _               => Role ?? "—"
+        };
+    }
 
     public ManageStaffModel(
         IStoredProcService storedProcService,

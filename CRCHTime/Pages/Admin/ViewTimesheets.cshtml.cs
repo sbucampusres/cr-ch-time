@@ -7,7 +7,7 @@ using CRCHTime.Services;
 
 namespace CRCHTime.Pages.Admin;
 
-[Authorize(Policy = "RequireAdministrator")]
+[Authorize(Policy = "RequireSupervisor")]
 public class ViewTimesheetsModel : PageModel
 {
     private readonly IStoredProcService _storedProcService;
@@ -36,9 +36,13 @@ public class ViewTimesheetsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public int? FilterCategoryId { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public int? FilterDepartmentId { get; set; }
+
     public string CurrentApplication { get; set; } = string.Empty;
     public IList<TimesheetEntry> Entries { get; set; } = [];
     public IList<ShiftCategory> ShiftCategories { get; set; } = [];
+    public IList<Department> Departments { get; set; } = [];
 
     // Per-person summary
     public IList<(string NetId, double TotalHours, int EntryCount)> Summary { get; set; } = [];
@@ -69,15 +73,17 @@ public class ViewTimesheetsModel : PageModel
     private async Task LoadPageDataAsync()
     {
         var catTask = _storedProcService.GetShiftCategoriesAsync(CurrentApplication);
+        var deptTask = _storedProcService.GetDepartmentsAsync(CurrentApplication);
         var entriesTask = _storedProcService.GetTimecardAsync(
             StartDate, EndDate,
             string.IsNullOrWhiteSpace(FilterNetId) ? null : FilterNetId.Trim().ToLower(),
-            null,
+            FilterDepartmentId,
             CurrentApplication);
 
-        await Task.WhenAll(catTask, entriesTask);
+        await Task.WhenAll(catTask, deptTask, entriesTask);
 
         ShiftCategories = (await catTask).OrderBy(c => c.Name).ToList();
+        Departments = (await deptTask).Where(d => !d.Inactive).OrderBy(d => d.Name).ToList();
 
         var allEntries = await entriesTask;
         Entries = (FilterCategoryId.HasValue
@@ -108,7 +114,7 @@ public class ViewTimesheetsModel : PageModel
     private string BuildCsv()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("NetID,Date,Check-In,In Computer,Check-Out,Out Computer,Hours,Category,Status");
+        sb.AppendLine("NetID,Date,Check-In,In Computer,Check-Out,Out Computer,Hours,Location,Category,Status");
 
         foreach (var e in Entries)
         {
@@ -122,6 +128,7 @@ public class ViewTimesheetsModel : PageModel
                 e.CheckoutTimestamp?.ToString("h:mm tt") ?? "",
                 CsvEscape(e.CheckoutHostname ?? ""),
                 hours,
+                CsvEscape(e.DepartmentName ?? ""),
                 CsvEscape(e.ShiftCategoryName ?? ""),
                 status));
         }

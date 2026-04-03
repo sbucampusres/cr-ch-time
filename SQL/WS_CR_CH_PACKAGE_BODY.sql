@@ -370,10 +370,12 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
                     w.CHECKOUT_IP,
                     w.APPLICATION,
                     w.DEPARTMENT_ID,
+                    d.NAME AS DEPARTMENT_NAME,
                     w.SHIFT_CATEGORY_ID,
                     sc.NAME AS SHIFT_CATEGORY_NAME
             FROM    WS_FCSTAFFWORKLOG w
             LEFT JOIN WS_CR_CS_SHIFT_CATEGORIES sc ON sc.ID = w.SHIFT_CATEGORY_ID
+            LEFT JOIN WS_FC_DEPARTMENTS d ON d.DEPT_ID = w.DEPARTMENT_ID AND d.APPLICATION = w.APPLICATION
             WHERE   w.CHECKIN_TIMESTAMP >= p_begindate
             AND     w.CHECKIN_TIMESTAMP <  p_enddate
             AND     (p_netid       IS NULL OR w.NETID         = p_netid)

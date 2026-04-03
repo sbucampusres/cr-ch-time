@@ -101,7 +101,7 @@
                                         data-role="@(item.Role?.ToLower() ?? "")">
                                         <td><code>@item.Staff.NetId</code></td>
                                         <td>@(item.DisplayName ?? "—")</td>
-                                        <td>@(item.Role ?? "—")</td>
+                                        <td>@item.RoleDisplay</td>
                                         <td>
                                             @if (item.Staff.IsTerminated)
                                             {

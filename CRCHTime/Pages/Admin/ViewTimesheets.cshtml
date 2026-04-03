@@ -26,13 +26,23 @@
                     <label asp-for="EndDate" class="form-label">End Date</label>
                     <input asp-for="EndDate" type="date" class="form-control" />
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label asp-for="FilterNetId" class="form-label">NetID</label>
                     <input asp-for="FilterNetId" class="form-control" placeholder="Filter by NetID" autocomplete="off" />
                 </div>
+                @if (Model.Departments.Any())
+                {
+                    <div class="col-md-2">
+                        <label asp-for="FilterDepartmentId" class="form-label">Location</label>
+                        <select asp-for="FilterDepartmentId" class="form-select"
+                                asp-items="@(new SelectList(Model.Departments, "DeptId", "Name"))">
+                            <option value="">All Locations</option>
+                        </select>
+                    </div>
+                }
                 @if (Model.ShiftCategories.Any())
                 {
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label asp-for="FilterCategoryId" class="form-label">Category</label>
                         <select asp-for="FilterCategoryId" class="form-select"
                                 asp-items="@(new SelectList(Model.ShiftCategories, "Id", "Name"))">
@@ -82,6 +92,7 @@
                asp-route-startDate="@Model.StartDate.ToString("yyyy-MM-dd")"
                asp-route-endDate="@Model.EndDate.ToString("yyyy-MM-dd")"
                asp-route-filterNetId="@Model.FilterNetId"
+               asp-route-filterLocationId="@Model.FilterDepartmentId"
                asp-route-filterCategoryId="@Model.FilterCategoryId"
                class="btn btn-outline-secondary">
                 <i class="fas fa-download"></i> Export CSV
@@ -183,6 +194,7 @@
                             <th scope="col">Check-Out</th>
                             <th scope="col">Out Computer</th>
                             <th scope="col">Duration</th>
+                            <th scope="col">Location</th>
                             <th scope="col">Category</th>
                             <th scope="col">Status</th>
                         </tr>
@@ -198,6 +210,7 @@
                                 <td>@(entry.CheckoutTimestamp?.ToString("h:mm tt") ?? "—")</td>
                                 <td><small class="text-muted">@(entry.CheckoutHostname ?? "—")</small></td>
                                 <td>@entry.DurationDisplay</td>
+                                <td>@(entry.DepartmentName ?? "—")</td>
                                 <td>@(entry.ShiftCategoryName ?? "—")</td>
                                 <td>
                                     @if (entry.IsCheckedIn)
