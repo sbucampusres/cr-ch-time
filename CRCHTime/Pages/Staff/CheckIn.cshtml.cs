@@ -66,6 +66,14 @@ public class CheckInModel : PageModel
         ShiftCategories = await _storedProcService.GetShiftCategoriesAsync(CurrentApplication);
         Departments = (await _storedProcService.GetDepartmentsAsync(CurrentApplication)).ToList();
 
+        if (Departments.Any() && DepartmentId == null)
+            ModelState.AddModelError(nameof(DepartmentId), "Please select a location.");
+        if (ShiftCategories.Any() && ShiftCategoryId == null)
+            ModelState.AddModelError(nameof(ShiftCategoryId), "Please select a shift category.");
+
+        if (!ModelState.IsValid)
+            return Page();
+
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         var hostname = await ResolveHostnameAsync(ip);
 

@@ -39,6 +39,19 @@ public class ViewTimesheetsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public int? FilterDepartmentId { get; set; }
 
+    // Edit form bind properties
+    [BindProperty] public string EditRowId { get; set; } = string.Empty;
+    [BindProperty] public string EditNetId { get; set; } = string.Empty;
+    [BindProperty] public string EditCheckinDate { get; set; } = string.Empty;
+    [BindProperty] public string EditCheckinTime { get; set; } = string.Empty;
+    [BindProperty] public string EditCheckoutDate { get; set; } = string.Empty;
+    [BindProperty] public string EditCheckoutTime { get; set; } = string.Empty;
+    [BindProperty] public int? EditDepartmentId { get; set; }
+    [BindProperty] public int? EditShiftCategoryId { get; set; }
+
+    [TempData] public string? StatusMessage { get; set; }
+    [TempData] public bool IsSuccess { get; set; }
+
     public string CurrentApplication { get; set; } = string.Empty;
     public IList<TimesheetEntry> Entries { get; set; } = [];
     public IList<ShiftCategory> ShiftCategories { get; set; } = [];
@@ -68,6 +81,49 @@ public class ViewTimesheetsModel : PageModel
         var fileName = $"timesheets_{CurrentApplication}_{StartDate:yyyyMMdd}_{EndDate:yyyyMMdd}.csv";
 
         return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+    }
+
+    public async Task<IActionResult> OnPostEditAsync()
+    {
+        CurrentApplication = _appContextService.GetCurrentApplication();
+
+        if (string.IsNullOrWhiteSpace(EditRowId))
+        {
+            StatusMessage = "Could not identify the entry to update.";
+            IsSuccess = false;
+            return RedirectToPage(new { startDate = StartDate, endDate = EndDate, filterNetId = FilterNetId, filterDepartmentId = FilterDepartmentId, filterCategoryId = FilterCategoryId });
+        }
+
+        if (!DateTime.TryParse($"{EditCheckinDate} {EditCheckinTime}", out var checkinDt))
+        {
+            StatusMessage = "Invalid check-in date or time.";
+            IsSuccess = false;
+            return RedirectToPage(new { startDate = StartDate, endDate = EndDate, filterNetId = FilterNetId, filterDepartmentId = FilterDepartmentId, filterCategoryId = FilterCategoryId });
+        }
+
+        DateTime? checkoutDt = null;
+        if (!string.IsNullOrWhiteSpace(EditCheckoutDate) && !string.IsNullOrWhiteSpace(EditCheckoutTime))
+        {
+            if (!DateTime.TryParse($"{EditCheckoutDate} {EditCheckoutTime}", out var co))
+            {
+                StatusMessage = "Invalid check-out date or time.";
+                IsSuccess = false;
+                return RedirectToPage(new { startDate = StartDate, endDate = EndDate, filterNetId = FilterNetId, filterDepartmentId = FilterDepartmentId, filterCategoryId = FilterCategoryId });
+            }
+            checkoutDt = co;
+        }
+
+        var auditUser = User.Identity?.Name ?? "unknown";
+        var result = await _storedProcService.UpdateTimesheetEntryAsync(
+            EditRowId, checkinDt, checkoutDt,
+            EditDepartmentId, EditShiftCategoryId, auditUser);
+
+        StatusMessage = result.Success ? "Timesheet entry updated." : (result.ErrorMessage ?? "An error occurred.");
+        IsSuccess = result.Success;
+
+        _logger.LogInformation("Timesheet entry {RowId} edited by {Auditor}: {Result}", EditRowId, auditUser, result.Success ? "success" : result.ErrorMessage);
+
+        return RedirectToPage(new { startDate = StartDate, endDate = EndDate, filterNetId = FilterNetId, filterDepartmentId = FilterDepartmentId, filterCategoryId = FilterCategoryId });
     }
 
     private async Task LoadPageDataAsync()

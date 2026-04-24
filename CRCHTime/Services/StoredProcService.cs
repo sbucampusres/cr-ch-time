@@ -910,6 +910,45 @@ public class StoredProcService : IStoredProcService
         }
     }
 
+    public async Task<OperationResult> UpdateTimesheetEntryAsync(string rowId, DateTime checkinTimestamp, DateTime? checkoutTimestamp, int? departmentId, int? shiftCategoryId, string auditUser)
+    {
+        try
+        {
+            using var connection = new OracleConnection(GetConnectionString());
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "WS_CR_CH.CRCH_UPDATE_TIMESHEET_ENTRY";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.Add("p_row_id", OracleDbType.Varchar2).Value = rowId;
+            command.Parameters.Add("p_checkin_timestamp", OracleDbType.Date).Value = checkinTimestamp;
+            command.Parameters.Add("p_checkout_timestamp", OracleDbType.Date).Value = checkoutTimestamp.HasValue ? (object)checkoutTimestamp.Value : DBNull.Value;
+            command.Parameters.Add("p_department_id", OracleDbType.Int32).Value = departmentId.HasValue ? (object)departmentId.Value : DBNull.Value;
+            command.Parameters.Add("p_shift_category_id", OracleDbType.Int32).Value = shiftCategoryId.HasValue ? (object)shiftCategoryId.Value : DBNull.Value;
+            command.Parameters.Add("p_user", OracleDbType.Varchar2).Value = auditUser;
+
+            var errorParam = new OracleParameter("r_error", OracleDbType.Varchar2, 500);
+            errorParam.Direction = ParameterDirection.Output;
+            command.Parameters.Add(errorParam);
+
+            await command.ExecuteNonQueryAsync();
+
+            var errorValue = errorParam.Value;
+            var errorMessage = (errorValue != null && errorValue != DBNull.Value) ? errorValue.ToString() : string.Empty;
+            if (errorMessage == "null") errorMessage = string.Empty;
+
+            return string.IsNullOrEmpty(errorMessage)
+                ? OperationResult.Succeeded()
+                : OperationResult.Failed(errorMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating timesheet entry {RowId}", rowId);
+            return OperationResult.Failed("An error occurred while updating the timesheet entry.");
+        }
+    }
+
     #endregion
 
     #region Student Info
@@ -1339,6 +1378,7 @@ public class StoredProcService : IStoredProcService
         return new TimesheetEntry
         {
             Id = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("ID"))),
+            RowIdentifier = reader.GetString(reader.GetOrdinal("ROW_IDENTIFIER")),
             NetId = reader.GetString(reader.GetOrdinal("NETID")),
             CheckinTimestamp = reader.GetDateTime(reader.GetOrdinal("CHECKIN_TIMESTAMP")),
             CheckinHostname = reader.IsDBNull(reader.GetOrdinal("CHECKIN_HOSTNAME"))

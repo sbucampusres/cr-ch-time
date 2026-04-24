@@ -1,4 +1,60 @@
 <div class="changelog">
+    <h6 class="text-primary mt-3">April 24, 2026</h6>
+    <p class="fw-semibold mb-2">Timesheet Entry Editing</p>
+    <ul>
+        <li>Admins can now edit timesheet entries directly from the All Timesheets view using a new Edit button</li>
+        <li>An inline modal form allows check-in and check-out times to be corrected without leaving the page</li>
+        <li>Current search filters are preserved after saving an edit</li>
+        <li>All edits are logged for audit purposes</li>
+    </ul>
+    <p class="fw-semibold mb-2">Check-In Page Improvements</p>
+    <ul>
+        <li>Location and Shift Category are now required fields when options are available, preventing incomplete check-ins</li>
+        <li>Shift category descriptions now appear inline next to each option and in a summary panel to help staff choose the correct category</li>
+        <li>Form validation runs before submission and shows clear inline error messages</li>
+    </ul>
+    <p class="fw-semibold mb-2">Minor Fixes</p>
+    <ul>
+        <li>Fixed an issue where editing a location from the Admin page did not save changes</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">April 3, 2026</h6>
+    <p class="fw-semibold mb-2">Supervisor Role and Location Terminology</p>
+    <ul>
+        <li>Added a new <code>Supervisor</code> role across authorization, navigation, and UI visibility</li>
+        <li>Introduced <code>RequireSupervisor</code> policy and included Supervisor access in operator and viewer policy flows where needed</li>
+        <li>Standardized "Department" terminology to "Location" across add, edit, manage, check-in, and reporting pages</li>
+        <li>Added friendly role display labels and a Supervisor badge in the login/status UI</li>
+        <li>Surfaced location data in timesheets, reporting views, and CSV exports</li>
+        <li>Updated stored procedure data mapping and SQL package joins to populate department/location names consistently</li>
+    </ul>
+    <p class="fw-semibold mb-2">Allotments and Department Selection</p>
+    <ul>
+        <li>Added annual hourly allotment support with a new <code>Allotment</code> entity and database table script</li>
+        <li>Created admin pages for allotment management and reporting</li>
+        <li>Extended <code>IStoredProcService</code> and <code>StoredProcService</code> with allotment CRUD and hours-used reporting</li>
+        <li>Added department selection to Add Staff, Edit Staff, and Check-In flows using stored procedure-backed dropdowns</li>
+        <li>Simplified staff lookup on Manage Staff and improved related logging and error handling</li>
+        <li>Added navigation entries for the new allotment pages</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">April 2, 2026</h6>
+    <p class="fw-semibold mb-2">Department Management</p>
+    <ul>
+        <li>Added admin pages to list, add, edit, and deactivate departments</li>
+        <li>Included validation and TempData status messaging for department management actions</li>
+        <li>Extended <code>IStoredProcService</code> and <code>StoredProcService</code> with department admin procedures</li>
+        <li>Added Oracle package procedures for department listing, create/update, and soft deactivation</li>
+        <li>Added a Departments link to the admin navigation menu</li>
+    </ul>
+
+    <h6 class="text-primary mt-3">March 31, 2026</h6>
+    <p class="fw-semibold mb-2">Project Rename and Base Forms</p>
+    <ul>
+        <li>Renamed the application to <code>cr-ch-time</code></li>
+        <li>Added the initial base forms used for the current workflow</li>
+    </ul>
+
     <h6 class="text-primary mt-3">March 17, 2026</h6>
     <p class="fw-semibold mb-2">Month/Year Selectors and Oracle Handling</p>
     <ul>

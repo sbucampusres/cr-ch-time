@@ -53,6 +53,7 @@ public interface IStoredProcService
 
     // Reports
     Task<IEnumerable<TimesheetEntry>> GetTimecardAsync(DateTime startDate, DateTime endDate, string? netId, int? departmentId, string? application);
+    Task<OperationResult> UpdateTimesheetEntryAsync(string rowId, DateTime checkinTimestamp, DateTime? checkoutTimestamp, int? departmentId, int? shiftCategoryId, string auditUser);
 
     // Allotments
     Task<IEnumerable<Allotment>> GetAllotmentsAsync(string application, int year);

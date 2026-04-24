@@ -139,4 +139,18 @@ CREATE OR REPLACE PACKAGE WS_CR_CH AS
         r_cursor        OUT SYS_REFCURSOR
     );
 
+    -- --------------------------------------------------------
+    -- Timesheet entry editing (admin)
+    -- --------------------------------------------------------
+
+    PROCEDURE CRCH_UPDATE_TIMESHEET_ENTRY(
+        p_row_id                IN  VARCHAR2,
+        p_checkin_timestamp     IN  DATE,
+        p_checkout_timestamp    IN  DATE,
+        p_department_id         IN  NUMBER,
+        p_shift_category_id     IN  NUMBER,
+        p_user                  IN  VARCHAR2,
+        r_error                 OUT VARCHAR2
+    );
+
 END WS_CR_CH;

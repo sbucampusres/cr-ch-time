@@ -361,6 +361,7 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
     BEGIN
         OPEN r_cursor FOR
             SELECT  ROWNUM AS ID,
+                    ROWIDTOCHAR(w.ROWID) AS ROW_IDENTIFIER,
                     w.NETID,
                     w.CHECKIN_TIMESTAMP,
                     w.CHECKIN_HOSTNAME,
@@ -470,5 +471,44 @@ CREATE OR REPLACE PACKAGE BODY WS_CR_CH AS
             GROUP BY w.DEPARTMENT_ID, w.SHIFT_CATEGORY_ID
             ORDER BY w.DEPARTMENT_ID, w.SHIFT_CATEGORY_ID;
     END CRCH_GET_HOURS_USED;
+
+    -- --------------------------------------------------------
+    -- CRCH_UPDATE_TIMESHEET_ENTRY
+    -- Updates an existing WS_FCSTAFFWORKLOG row identified by
+    -- NETID + original check-in timestamp (cast to DATE to
+    -- strip sub-second precision stored by SYSTIMESTAMP).
+    -- Pass NULL for p_checkout_timestamp to clear the checkout
+    -- (sets entry back to active/checked-in state).
+    -- --------------------------------------------------------
+    PROCEDURE CRCH_UPDATE_TIMESHEET_ENTRY(
+        p_row_id                IN  VARCHAR2,
+        p_checkin_timestamp     IN  DATE,
+        p_checkout_timestamp    IN  DATE,
+        p_department_id         IN  NUMBER,
+        p_shift_category_id     IN  NUMBER,
+        p_user                  IN  VARCHAR2,
+        r_error                 OUT VARCHAR2
+    ) IS
+    BEGIN
+        r_error := NULL;
+
+        UPDATE WS_FCSTAFFWORKLOG
+        SET    CHECKIN_TIMESTAMP   = p_checkin_timestamp,
+               CHECKOUT_TIMESTAMP  = p_checkout_timestamp,
+               DEPARTMENT_ID       = p_department_id,
+               SHIFT_CATEGORY_ID   = p_shift_category_id
+        WHERE  ROWID = CHARTOROWID(p_row_id);
+
+        IF SQL%ROWCOUNT = 0 THEN
+            r_error := 'Timesheet entry not found.';
+            RETURN;
+        END IF;
+
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            r_error := 'Error updating timesheet entry: ' || SQLERRM;
+    END CRCH_UPDATE_TIMESHEET_ENTRY;
 
 END WS_CR_CH;

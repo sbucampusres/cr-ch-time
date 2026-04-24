@@ -39,9 +39,14 @@ public class EditDepartmentModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(int id)
     {
+        if (id <= 0)
+            return NotFound();
+
+        Department.DeptId = id;
         Department.Application = _appContextService.GetCurrentApplication();
+        ModelState.Remove("Department.DeptId");
         ModelState.Remove("Department.Application");
 
         if (!ModelState.IsValid)

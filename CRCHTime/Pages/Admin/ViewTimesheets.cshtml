@@ -11,6 +11,16 @@
     </div>
 </div>
 
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show"
+         role="@(Model.IsSuccess ? "status" : "alert")" aria-live="polite">
+        <i class="fas @(Model.IsSuccess ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
@@ -197,6 +207,7 @@
                             <th scope="col">Location</th>
                             <th scope="col">Category</th>
                             <th scope="col">Status</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -226,6 +237,23 @@
                                         <span class="badge bg-secondary">Complete</span>
                                     }
                                 </td>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary edit-entry-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editEntryModal"
+                                            aria-label="Edit entry for @entry.NetId"
+                                            data-row-id="@entry.RowIdentifier"
+                                            data-netid="@entry.NetId"
+                                            data-checkin-date="@entry.CheckinTimestamp.ToString("yyyy-MM-dd")"
+                                            data-checkin-time="@entry.CheckinTimestamp.ToString("HH:mm")"
+                                            data-checkout-date="@(entry.CheckoutTimestamp?.ToString("yyyy-MM-dd") ?? "")"
+                                            data-checkout-time="@(entry.CheckoutTimestamp?.ToString("HH:mm") ?? "")"
+                                            data-department-id="@(entry.DepartmentId?.ToString() ?? "")"
+                                            data-category-id="@(entry.ShiftCategoryId?.ToString() ?? "")">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -239,4 +267,117 @@ else
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i> No timesheet entries found for the selected filters.
     </div>
+}
+
+<!-- Edit Entry Modal -->
+<div class="modal fade" id="editEntryModal" tabindex="-1" aria-labelledby="editEntryModalLabel" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEntryModalLabel">
+                    <i class="fas fa-pencil-alt"></i> Edit Timesheet Entry
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="Edit">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">NetID: <code id="editNetIdDisplay"></code></p>
+
+                    <!-- Hidden: row identifier + filter state preservation -->
+                    <input type="hidden" name="EditRowId" id="editRowId" />
+                    <input type="hidden" name="EditNetId" id="editNetId" />
+                    <input type="hidden" name="StartDate" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="FilterNetId" value="@Model.FilterNetId" />
+                    <input type="hidden" name="FilterDepartmentId" value="@Model.FilterDepartmentId" />
+                    <input type="hidden" name="FilterCategoryId" value="@Model.FilterCategoryId" />
+
+                    <fieldset>
+                        <legend class="visually-hidden">Edit timesheet entry</legend>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="editCheckinDate" class="form-label">Check-In Date <span aria-hidden="true" class="text-danger">*</span></label>
+                                <input type="date" id="editCheckinDate" name="EditCheckinDate" class="form-control" required aria-required="true" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editCheckinTime" class="form-label">Check-In Time <span aria-hidden="true" class="text-danger">*</span></label>
+                                <input type="time" id="editCheckinTime" name="EditCheckinTime" class="form-control" required aria-required="true" />
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="editCheckoutDate" class="form-label">Check-Out Date</label>
+                                <input type="date" id="editCheckoutDate" name="EditCheckoutDate" class="form-control" />
+                                <div class="form-text">Leave blank to keep entry as active (checked in).</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editCheckoutTime" class="form-label">Check-Out Time</label>
+                                <input type="time" id="editCheckoutTime" name="EditCheckoutTime" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            @if (Model.Departments.Any())
+                            {
+                                <div class="col-md-6">
+                                    <label for="editDepartmentId" class="form-label">Location</label>
+                                    <select id="editDepartmentId" name="EditDepartmentId" class="form-select">
+                                        <option value="">— None —</option>
+                                        @foreach (var dept in Model.Departments)
+                                        {
+                                            <option value="@dept.DeptId">@dept.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                            @if (Model.ShiftCategories.Any())
+                            {
+                                <div class="col-md-6">
+                                    <label for="editCategoryId" class="form-label">Shift Category</label>
+                                    <select id="editCategoryId" name="EditShiftCategoryId" class="form-select">
+                                        <option value="">— None —</option>
+                                        @foreach (var cat in Model.ShiftCategories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.edit-entry-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var netid = btn.dataset.netid;
+                document.getElementById('editRowId').value = btn.dataset.rowId;
+                document.getElementById('editNetId').value = netid;
+                document.getElementById('editNetIdDisplay').textContent = netid;
+                document.getElementById('editCheckinDate').value = btn.dataset.checkinDate;
+                document.getElementById('editCheckinTime').value = btn.dataset.checkinTime;
+                document.getElementById('editCheckoutDate').value = btn.dataset.checkoutDate;
+                document.getElementById('editCheckoutTime').value = btn.dataset.checkoutTime;
+
+                var deptSelect = document.getElementById('editDepartmentId');
+                if (deptSelect) deptSelect.value = btn.dataset.departmentId || '';
+
+                var catSelect = document.getElementById('editCategoryId');
+                if (catSelect) catSelect.value = btn.dataset.categoryId || '';
+            });
+        });
+    </script>
 }
